@@ -1,8 +1,49 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-    TODO
-    <!-- NEW POST FIELD -->
 
-    <!-- LOAD ALL POSTS -->
+    <!-- NEW POST FIELD -->
+    {% if user.is_authenticated %}
+        <div>
+            <form action="{% url 'index' %}" method="post">
+                {% csrf_token %}
+                <label>{{ form.content.label }}</label>
+                <div>{{ form.content }}</div>
+                <input type="submit">
+            </form>
+        </div>
+    {% endif %}
+
+    <div>
+
+        {% if posts %}
+
+            <!-- LOAD ALL POSTS -->
+            {% for item in posts %}
+            <br>
+            <div>
+                <div>
+                    {{ item.user.username}}
+                </div>
+                <div>
+                    {{ item.content }}                    
+                </div>
+                <div>
+                    {{ item.posted }}
+                </div>
+                <div>
+                    {{ item.likes }} likes
+                </div>
+            </div>
+            <br>
+            {% endfor %}
+
+        {% else %}
+
+            No Posts
+
+        {% endif %}
+
+    </div>
+
 {% endblock %}
