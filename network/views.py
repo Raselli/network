@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django import forms
 
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 
 from .models import User, Profile, Post
@@ -64,9 +65,22 @@ def user_profile(request, username):
         "form": PostForm(),
         "posts": Post.objects.filter(user=user.id).select_related().order_by('-posted')
     })
-
 # profile on seperate page or on same?
 
+@login_required(login_url='login')
+def following(request):
+    try:
+        follow = (Profile.objects.get(user=request.user.id))['following']
+        print(f'{follow}')
+    except:
+        print('except@following')
+        follow = None
+        
+    return render(request, "network/index.html" , {
+        "form": PostForm(),
+        "follow": follow
+    })
+        
 # def following
     # load all (recent?) posts of users the auth. user follows
     # login req.

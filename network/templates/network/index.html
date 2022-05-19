@@ -2,40 +2,72 @@
 
 {% block body %}
 
-    <!-- NEW POST FIELD -->
-    {% if user.is_authenticated %}
-        <div>
-            <form action="{% url 'index' %}" method="post">
+    {% if profile %}
+
+        <!-- follow/unfollow -->   
+        {% if user.is_authenticated %}
+            <form action="{% url 'profile' request.user.username %}" method="post">
                 {% csrf_token %}
-                <label>{{ form.content.label }}</label>
-                <div>{{ form.content }}</div>
-                <input type="submit">
+                {% if profile.following %}
+                    <input class="btn btn-info" type="submit" name="follow" value="follow">
+                {% else %}
+                    <input class="btn btn-info" type="submit" name="follow" value="unfollow">
+                {% endif %}
             </form>
+        {% endif %}
+
+        <!-- profile -->   
+        <div>
+            following: {{ profile.following.count }}
+            <br>
+            followers: {{ profile.followers.count }}
         </div>
+
+    {% else %}
+
+        <div>
+            <!-- NEW POST FIELD -->    
+            {% if user.is_authenticated %}
+
+                <form action="{% url 'index' %}" method="post">
+                    {% csrf_token %}
+                    <label>{{ form.content.label }}</label>
+                    <div>{{ form.content }}</div>
+                    <input type="submit">
+                </form>
+            
+            {% else %}
+                You need to log in for writing a new Post.<br>
+                Log in <a href="{% url 'login' %}">here</a>.
+            {% endif %}
+
+        </div>
+        
     {% endif %}
 
+    <!-- Posts -->   
     <div>
 
         {% if posts %}
 
             <!-- LOAD ALL POSTS -->
             {% for item in posts %}
-            <br>
-            <div>
+                <br>
                 <div>
-                    {{ item.user.username}}
+                    <div>
+                        {{ item.user.username}}
+                    </div>
+                    <div>
+                        {{ item.content }}                    
+                    </div>
+                    <div>
+                        {{ item.posted }}
+                    </div>
+                    <div>
+                        {{ item.likes }} likes
+                    </div>
                 </div>
-                <div>
-                    {{ item.content }}                    
-                </div>
-                <div>
-                    {{ item.posted }}
-                </div>
-                <div>
-                    {{ item.likes }} likes
-                </div>
-            </div>
-            <br>
+                <br>
             {% endfor %}
 
         {% else %}
