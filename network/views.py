@@ -64,18 +64,25 @@ def profile(request, profile_name):
     if request.method == "POST":
         current_users_profile = request.user.profile
         
-        # Check for request manipulation
+        # Check for request manipulation 1
         if other_user.id == request.user.id:
             return HttpResponseBadRequest('It is not possible to follow/unfollow yourself.')
 
-        # Add/remove item from Profile.followings   
+        # Add other_user to Profile.followings   
         if "follow" in request.POST:
             current_users_profile.following.add(other_users_profile)
             other_users_profile.followers += 1
-# TODO: specific handlinmg for 'unfollow'
-        else:
+
+        # Remove other_user from Profile.followings  
+        elif "unfollow" in request.POST:
+            print('unfollow')
             current_users_profile.following.remove(other_users_profile)
-            other_users_profile.followers -= 1     
+            other_users_profile.followers -= 1
+        
+        # Check for request manipulation 2
+        else:
+            return HttpResponseBadRequest('Bad request.')
+
         current_users_profile.save()
         other_users_profile.save()
         return HttpResponseRedirect(f"{profile_name}") 
@@ -98,7 +105,7 @@ def following(request):
         other_users_pk = profile.user.id
         other_users_pks.append(other_users_pk) 
     return render(request, "network/index.html" , {
-        "posts": Post.objects.filter(pk__in=other_users_pks).select_related().order_by('-posted')
+        "posts": Post.objects.select_related().filter(user_id__in=other_users_pks).order_by('-posted')
     })
 
 
