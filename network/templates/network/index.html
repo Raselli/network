@@ -4,6 +4,8 @@
 
     {% if profile %}
 
+    
+
         <!-- follow/unfollow -->   
         {% if user.is_authenticated and profile.user.username != request.user.username %}
             <form action="{% url 'profile' profile.user.username %}" method="post">
@@ -78,4 +80,22 @@
 
     </div>
 
+    <!-- Pagination -->
+    <div class="pagination">
+        <span class="step-links">
+            {% if posts.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ posts.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ posts.number }} of {{ posts.paginator.num_pages }}.
+            </span>
+
+            {% if posts.has_next %}
+                <a href="?page={{ posts.next_page_number }}">next</a>
+                <a href="?page={{ posts.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
 {% endblock %}
