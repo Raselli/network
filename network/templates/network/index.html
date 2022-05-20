@@ -5,7 +5,7 @@
     {% if profile %}
 
         <!-- follow/unfollow -->   
-        {% if user.is_authenticated and profile.user.username != request.user.username %}
+        {% if user.is_authenticated %}
             <form action="{% url 'profile' profile.user.username %}" method="post">
                 {% csrf_token %}
 
