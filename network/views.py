@@ -1,12 +1,12 @@
+from queue import Empty
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django import forms
-
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
+
 
 from .models import User, Profile, Post
 
@@ -52,36 +52,42 @@ def index(request):
         # display user's posts (reverse chronological order: newest -> oldest)
         # if visitor != user: follow/unfollow button
 
-def user_profile(request, username):
+def profile(request, profile_name):
 
     # Query profile
-    try: 
-        user = User.objects.get(username=username)
-    except:
-        raise Http404("Profile does not exist.")
-    
+    other_user = get_object_or_404(User, username=profile_name)
+    other_users_profile = Profile.objects.get(pk=other_user.id)
+
+    # method == POST:
+    if request.method == "POST":
+        current_users_profile = request.user.profile
+        
+        # Add/remove item from Profile.followings   
+        if "follow" in request.POST:
+            current_users_profile.following.add(other_users_profile)
+            other_users_profile.followers += 1
+# TODO: specific handlinmg for 'unfollow'
+        else:
+            current_users_profile.following.remove(other_users_profile)
+            other_users_profile.followers -= 1     
+        current_users_profile.save()
+        other_users_profile.save()
+        return HttpResponseRedirect(f"{profile_name}") 
+
     return render(request, "network/index.html" , {
-        "profile": Profile.objects.prefetch_related().get(user=user.id),
-        "form": PostForm(),
-        "posts": Post.objects.filter(user=user.id).select_related().order_by('-posted')
+        "profile": Profile.objects.prefetch_related().get(user=other_user.id),
+        "posts": Post.objects.filter(user=other_user.id).select_related().order_by('-posted')
     })
 # profile on seperate page or on same?
 
+
+
+
 @login_required(login_url='login')
 def following(request):
-    try:
-        follow = (Profile.objects.get(user=request.user.id))['following']
-        print(f'{follow}')
-    except:
-        print('except@following')
-        follow = None
-        
-    return render(request, "network/index.html" , {
-        "form": PostForm(),
-        "follow": follow
-    })
-        
-# def following
+    current_user_profile = request.user.profile        
+    
+#TODO:
     # load all (recent?) posts of users the auth. user follows
     # login req.
     # ? merge with 'def posts' under same rendering with switchstatement/dict of different db queries ?
@@ -89,8 +95,13 @@ def following(request):
         # render only 10 postsat once
         # next button for next 10 posts
         # back button for prev 10 posts
+ 
+    return render(request, "network/index.html" , {
+        "follow": current_user_profile.following.all()
+    })
 
-# add ModelForm edit_post
+# ? add ModelForm edit_post ?
+# or use jinja/JS
   
 # def edit_post
     # load textarea with posts content inside
@@ -146,9 +157,10 @@ def register(request):
             user = User.objects.create_user(username, email, password)
             user.save()
             
-# create profile
+            # Create profile
             profile = Profile.objects.create(user=user)
             profile.save()
+            
         except IntegrityError:
             return render(request, "network/register.html", {
                 "message": "Username already taken."

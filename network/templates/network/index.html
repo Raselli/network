@@ -5,14 +5,14 @@
     {% if profile %}
 
         <!-- follow/unfollow -->   
-        {% if user.is_authenticated %}
-            <form action="{% url 'profile' request.user.username %}" method="post">
+        {% if user.is_authenticated and profile.user.username != request.user.username %}
+            <form action="{% url 'profile' profile.user.username %}" method="post">
                 {% csrf_token %}
-                {% if profile.following %}
+
                     <input class="btn btn-info" type="submit" name="follow" value="follow">
-                {% else %}
-                    <input class="btn btn-info" type="submit" name="follow" value="unfollow">
-                {% endif %}
+
+                    <input class="btn btn-info" type="submit" name="unfollow" value="unfollow">
+
             </form>
         {% endif %}
 
@@ -20,7 +20,7 @@
         <div>
             following: {{ profile.following.count }}
             <br>
-            followers: {{ profile.followers.count }}
+            followers: {{ profile.followers }}
         </div>
 
     {% else %}
@@ -33,7 +33,7 @@
                     {% csrf_token %}
                     <label>{{ form.content.label }}</label>
                     <div>{{ form.content }}</div>
-                    <input type="submit">
+                    <input type="submit" value="Post">
                 </form>
             
             {% else %}
@@ -55,7 +55,7 @@
                 <br>
                 <div>
                     <div>
-                        {{ item.user.username}}
+                        <a href={% url 'profile' item.user.username %}>{{ item.user.username}}</a>
                     </div>
                     <div>
                         {{ item.content }}                    
