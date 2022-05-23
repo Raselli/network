@@ -27,15 +27,18 @@ class PostForm(forms.ModelForm):
 
 def index(request):
     if request.method == 'POST':
-        form = PostForm(request.POST)
-        if form.is_valid:
-            form = form.save(commit=False)
-            form.user_id = request.user.id
-            form.save()
-            return HttpResponseRedirect("/")
-        else:
-# TODO: VALIDATION ERROR HANDLING
-            return HttpResponseRedirect("/")            
+        if 'initial_post' in request.POST:
+            form = PostForm(request.POST)
+            if form.is_valid:
+                form = form.save(commit=False)
+                form.user_id = request.user.id
+                form.save()
+                return HttpResponseRedirect("/")
+            else:
+    # TODO: VALIDATION ERROR HANDLING
+                return HttpResponseRedirect("/")
+        elif 'edit' in request.POST:
+            print('hello')        
     else:
         all_posts = Post.objects.select_related().order_by('-posted')
         paginate_posts = Paginator(all_posts, 10, orphans=0, allow_empty_first_page=True)
@@ -53,8 +56,17 @@ def index(request):
         # display user's posts (reverse chronological order: newest -> oldest)
         # if visitor != user: follow/unfollow button
 
+    # Change Pagination
+        # Replace pagination->next/prev. page with:
+            # On scroll-down: load more
+        
+        
 # Load others profiles
     # profile on seperate page or on same?  
+    
+    
+    
+    
 def profile(request, profile_name):
 
     # Query profile

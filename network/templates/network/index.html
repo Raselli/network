@@ -51,27 +51,30 @@
     <div>
 
         {% if posts %}
-
-            <!-- LOAD ALL POSTS -->
-            {% for item in posts %}
-                <br>
-                <div>
-                    <div>
-                        <a href={% url 'profile' item.user.username %}>{{ item.user.username}}</a>
+            <div id="posts_frame">
+                <!-- LOAD ALL POSTS -->
+                {% for post in posts %}
+                    <br>
+                    <div id="frame_{{post.id}}">
+                        <div>
+                            <a href={% url 'profile' post.user.username %}>{{ post.user.username}}</a>
+                        </div>
+                        <div id="content_{{post.id}}">
+                            <div>
+                                {{ post.content }}                  
+                            </div>
+                            <button id="{{post.id}}" type="button" name="edit">Edit</button>
+                        </div>                            
+                        <div id="timestamp_{{post.id}}">
+                            {{ post.posted }}
+                        </div>
+                        <div id="likes_{{post.id}}">
+                            {{ post.likes }} likes
+                        </div>
                     </div>
-                    <div>
-                        {{ item.content }}                    
-                    </div>
-                    <div>
-                        {{ item.posted }}
-                    </div>
-                    <div>
-                        {{ item.likes }} likes
-                    </div>
-                </div>
-                <br>
-            {% endfor %}
-
+                    <br>
+                {% endfor %}
+            </div>
         {% else %}
 
             No Posts
@@ -79,6 +82,9 @@
         {% endif %}
 
     </div>
+
+
+
 
     <!-- Pagination -->
     <div class="pagination">
