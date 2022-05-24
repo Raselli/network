@@ -8,6 +8,9 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django import forms
 
+# TODO: check imports
+import json
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import User, Profile, Post
 
@@ -25,20 +28,26 @@ class PostForm(forms.ModelForm):
             "content": "New Post"
         }
 
+@csrf_exempt
 def index(request):
     if request.method == 'POST':
-        if 'initial_post' in request.POST:
-            form = PostForm(request.POST)
-            if form.is_valid:
-                form = form.save(commit=False)
-                form.user_id = request.user.id
-                form.save()
-                return HttpResponseRedirect("/")
-            else:
-    # TODO: VALIDATION ERROR HANDLING
-                return HttpResponseRedirect("/")
-        elif 'edit' in request.POST:
-            print('hello')        
+        form = PostForm(request.POST)
+        if form.is_valid:
+            form = form.save(commit=False)
+            form.user_id = request.user.id
+            form.save()
+            return HttpResponseRedirect("/")
+        else:
+# TODO: VALIDATION ERROR HANDLING
+            return HttpResponseRedirect("/")
+    
+    if request.method == 'PUT':
+# TODO:
+        # START PLACEHOLDER
+        data = json.loads(request.body)
+        print(data)
+        # END PLACEHOLDER
+        
     else:
         all_posts = Post.objects.select_related().order_by('-posted')
         paginate_posts = Paginator(all_posts, 10, orphans=0, allow_empty_first_page=True)
@@ -63,8 +72,7 @@ def index(request):
         
 # Load others profiles
     # profile on seperate page or on same?  
-    
-    
+ 
     
     
 def profile(request, profile_name):

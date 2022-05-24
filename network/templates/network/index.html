@@ -2,6 +2,10 @@
 
 {% block body %}
 
+
+    {% csrf_token %}
+
+
     {% if profile %}
 
     
@@ -33,6 +37,7 @@
 
                 <form action="{% url 'index' %}" method="post">
                     {% csrf_token %}
+                    
                     <label>{{ form.content.label }}</label>
                     <div>{{ form.content }}</div>
                     <input type="submit" value="Post">
@@ -63,7 +68,7 @@
                             <div>
                                 {{ post.content }}                  
                             </div>
-                            <button id="{{post.id}}" type="button" name="edit">Edit</button>
+                            <button id="edit_{{post.id}}" type="button" name="edit">Edit</button>
                         </div>                            
                         <div id="timestamp_{{post.id}}">
                             {{ post.posted }}
