@@ -67,12 +67,15 @@
                         <div id="content_{{post.id}}">
                             {{ post.content }}                  
                         </div>
-                        <button id="edit_{{post.id}}" type="button" name="edit">Edit</button>                                                   
+                        {% if user.is_authenticated and user.id == post.user_id %}
+                            <button id="edit_{{post.id}}" type="button" name="edit">Edit</button>
+                        {% endif %}                                                 
                         <div id="timestamp_{{post.id}}">
                             {{ post.posted }}
                         </div>
                         <div id="likes_{{post.id}}">
-                            {{ post.likes }} likes
+                            {{ post.likes }} likes 
+                            <button id="like_{{post.id}}" type="button" name="like">&#10084;</button>
                         </div>
                     </div>
                     <br>

@@ -63,7 +63,37 @@ def index(request):
 
     # Load others profiles
         # profile on seperate page or on same?  
- 
+
+def like(request):
+    if request.method != "PUT":
+        return JsonResponse({"message": "PUT request required."}, status=400)
+
+    data = json.loads(request.body)
+    post_id = data.get("id")
+    edited_content = data.get("content")
+
+    try:
+        this_post = Post.objects.get(id=post_id)
+
+    except:
+        return JsonResponse({"message": f"Post #{post_id} not found."}, status=404)
+    
+    if request.user.id != this_post.user_id:
+# TODO: if wrong user: does not accept, but loads rejected content inside post
+        return JsonResponse({"message": "Forbidden"}, status=403)
+
+    this_post.content = edited_content
+    this_post.save()    
+    
+    return JsonResponse({"message": f"Post #{post_id} has been edited."}, status=202)  
+
+
+
+
+
+
+
+
 
 def edit(request):
     if request.method != "PUT":
