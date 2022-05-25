@@ -32,29 +32,17 @@ class PostForm(forms.ModelForm):
 
 @csrf_exempt
 def index(request):
-    print("METHOD")
     if request.method == 'POST':
-        if "edit" in request.POST:
-
-    # TODO:
-            # START PLACEHOLDER
-            print("PUT")
-            print(request.body)
-            #data = json.loads(request.body)
-            #print(data)
-            # END PLACEHOLDER
-            return JsonResponse({"message": "test."}, status=201)
+        print("post")
+        form = PostForm(request.POST)
+        if form.is_valid:
+            form = form.save(commit=False)
+            form.user_id = request.user.id
+            form.save()
+            return HttpResponseRedirect("/")
         else:
-            print("post")
-            form = PostForm(request.POST)
-            if form.is_valid:
-                form = form.save(commit=False)
-                form.user_id = request.user.id
-                form.save()
-                return HttpResponseRedirect("/")
-            else:
-    # TODO: VALIDATION ERROR HANDLING
-                return HttpResponseRedirect("/")     
+# TODO: VALIDATION ERROR HANDLING
+            return HttpResponseRedirect("/")     
             
                
     else:
@@ -83,7 +71,31 @@ def index(request):
 # Load others profiles
     # profile on seperate page or on same?  
  
+@csrf_exempt
+def edit(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+# TODO:
 
+    data = json.loads(request.body)
+    post_id = data.get("id")
+    edited_content = data.get("content")
+
+    try:
+        this_post = Post.objects.get(id=post_id)
+        print(this_post)
+    except:
+        return JsonResponse({
+            "error": f"Post not found."
+        }, status=404)
+# TODO: check for correct user
+    
+    return JsonResponse({"message": "test."}, status=201)  
+    
+    
+    
+    
+    
     
 def profile(request, profile_name):
 
