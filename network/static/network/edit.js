@@ -44,6 +44,7 @@ function edit(event) {
     edit_button.type = 'submit';
     edit_button.className = 'btn btn-sm btn-outline-primary';
     edit_button.setAttribute('id', 'edit');
+    edit_button.setAttribute('name', 'edit');
     edit_button.innerHTML = 'Save';
 
     form.append(edit_textarea, edit_button);
@@ -54,7 +55,7 @@ function edit(event) {
 };
 
 
-function save_edit() {
+function save_edit(event) {
 /* TODO: */
     /* first: GET post, then PUT */
     /* views -> csrf temp. deactivated */
@@ -75,5 +76,5 @@ function save_edit() {
         // Print result & load mailbox
         console.log(response);
     })
-
+    event.preventDefault();
 };

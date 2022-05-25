@@ -1,3 +1,4 @@
+from http.client import OK
 from queue import Empty
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -9,6 +10,7 @@ from django.urls import reverse
 from django import forms
 
 # TODO: check imports
+from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
 
@@ -30,25 +32,33 @@ class PostForm(forms.ModelForm):
 
 @csrf_exempt
 def index(request):
+    print("METHOD")
     if request.method == 'POST':
-        form = PostForm(request.POST)
-        if form.is_valid:
-            form = form.save(commit=False)
-            form.user_id = request.user.id
-            form.save()
-            return HttpResponseRedirect("/")
+        if "edit" in request.POST:
+
+    # TODO:
+            # START PLACEHOLDER
+            print("PUT")
+            print(request.body)
+            #data = json.loads(request.body)
+            #print(data)
+            # END PLACEHOLDER
+            return JsonResponse({"message": "test."}, status=201)
         else:
-# TODO: VALIDATION ERROR HANDLING
-            return HttpResponseRedirect("/")
-    
-    if request.method == 'PUT':
-# TODO:
-        # START PLACEHOLDER
-        data = json.loads(request.body)
-        print(data)
-        # END PLACEHOLDER
-        
+            print("post")
+            form = PostForm(request.POST)
+            if form.is_valid:
+                form = form.save(commit=False)
+                form.user_id = request.user.id
+                form.save()
+                return HttpResponseRedirect("/")
+            else:
+    # TODO: VALIDATION ERROR HANDLING
+                return HttpResponseRedirect("/")     
+            
+               
     else:
+        print("else")
         all_posts = Post.objects.select_related().order_by('-posted')
         paginate_posts = Paginator(all_posts, 10, orphans=0, allow_empty_first_page=True)
         page_number = request.GET.get('page')
@@ -73,7 +83,7 @@ def index(request):
 # Load others profiles
     # profile on seperate page or on same?  
  
-    
+
     
 def profile(request, profile_name):
 
