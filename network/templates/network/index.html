@@ -65,11 +65,9 @@
                             <a href={% url 'profile' post.user.username %}>{{ post.user.username}}</a>
                         </div>
                         <div id="content_{{post.id}}">
-                            <div>
-                                {{ post.content }}                  
-                            </div>
-                            <button id="edit_{{post.id}}" type="button" name="edit">Edit</button>
-                        </div>                            
+                            {{ post.content }}                  
+                        </div>
+                        <button id="edit_{{post.id}}" type="button" name="edit">Edit</button>                                                   
                         <div id="timestamp_{{post.id}}">
                             {{ post.posted }}
                         </div>

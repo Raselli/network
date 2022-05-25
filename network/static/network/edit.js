@@ -6,59 +6,72 @@ document.addEventListener('DOMContentLoaded', function() {
     const buttons = document.getElementsByTagName("button");
     for (var i = 0; i < buttons.length; i += 1) {
         buttons[i].onclick = function() {
-            edit(this.id);
+            prepare_editing(this.id);
         };
     };
+    
 });
 
 /* replaces content of div with POST-Form */
-function edit(id) {
-    var element = document.getElementById(id);
-    const parent = element.parentElement;
+function prepare_editing(id) {
+
+    const element = document.getElementById(id);
+    const content_container = element.previousElementSibling
     const content = element.previousElementSibling.innerHTML.trim();
-    parent.innerHTML = '';
+
+    /* Clear content_container & hide 'edit'-button */
+    content_container.innerHTML = '';
+    element.style.display="none";
 
     /* Create Content Textfield */
     var edit_textarea = document.createElement('textarea');
     edit_textarea.setAttribute('id', 'edit_content');
 
-    /* Create Editing Button */
-    var edit_button = document.createElement('button');
-    edit_button.className = 'btn btn-sm btn-outline-primary';
-    edit_button.setAttribute('id', 'edit');
-    edit_button.innerHTML = 'Save';
+    /* Create Save Button */
+    var save_button = document.createElement('button');
+    save_button.className = 'btn btn-sm btn-outline-primary';
+    save_button.setAttribute('id', 'save');
+    save_button.innerHTML = 'Save';
 
-    parent.append(edit_textarea, edit_button);
+    /* Add new elements to content-container(DIV) and populate textarea */
+    content_container.append(edit_textarea, save_button);
     edit_textarea.innerHTML = content;
 
-    document.querySelector('#edit').addEventListener('click', save_edit)
+    /*Event: save edited content */
+    document.querySelector('#save').addEventListener('click', save_edit)
 
 };
 
-
+/* Accept and commit 'content' changes */
 function save_edit(event) {
-/* TODO: */
-    /* views -> csrf temp. deactivated */
-    console.log(`id = ${document.querySelector('#edit_content').parentNode.id.slice(8)}`);
-    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;    
+    const post_id = document.querySelector('#edit_content').parentNode.id.slice(8)
+    const post_content = document.querySelector('#edit_content').value
+
     const request = new Request(
         '/edit',
         {headers: {'X-CSRFToken': csrftoken}}
     );
     fetch(request, {
-        method: 'POST',
+        method: 'PUT',
         mode: 'same-origin',
         body: JSON.stringify({
-            id: document.querySelector('#edit_content').parentNode.id.slice(8),
-            content: document.querySelector('#edit_content').value
+            id: post_id,
+            content: post_content
         })
     })
     .then(function(response) {
         console.log(response);
-    })
-    .catch(error => {
-        console.log('Error:', error);
     });
 
+    /* Replace content */
+    document.querySelector(`#content_${post_id}`).innerHTML = post_content;
+
+    /* Display 'Edit'-button */
+    document.getElementById(`edit_${post_id}`).style.display="unset";
+
+    /* Prevent submission */
     event.preventDefault();
+
 };

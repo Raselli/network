@@ -12,7 +12,6 @@ from django import forms
 # TODO: check imports
 from django.http import JsonResponse
 import json
-from django.views.decorators.csrf import csrf_exempt
 
 from .models import User, Profile, Post
 
@@ -30,10 +29,10 @@ class PostForm(forms.ModelForm):
             "content": "New Post"
         }
 
-@csrf_exempt
+
 def index(request):
+    
     if request.method == 'POST':
-        print("post")
         form = PostForm(request.POST)
         if form.is_valid:
             form = form.save(commit=False)
@@ -44,9 +43,7 @@ def index(request):
 # TODO: VALIDATION ERROR HANDLING
             return HttpResponseRedirect("/")     
             
-               
     else:
-        print("else")
         all_posts = Post.objects.select_related().order_by('-posted')
         paginate_posts = Paginator(all_posts, 10, orphans=0, allow_empty_first_page=True)
         page_number = request.GET.get('page')
@@ -55,6 +52,7 @@ def index(request):
             "form": PostForm(),
             "posts": page_obj
         })
+        
 # TODO:
     # like/unlike button: JS, asynch., update like-count (no re-render)
         
@@ -63,19 +61,13 @@ def index(request):
         # display user's posts (reverse chronological order: newest -> oldest)
         # if visitor != user: follow/unfollow button
 
-    # Change Pagination
-        # Replace pagination->next/prev. page with:
-            # On scroll-down: load more
-        
-        
-# Load others profiles
-    # profile on seperate page or on same?  
+    # Load others profiles
+        # profile on seperate page or on same?  
  
-@csrf_exempt
+
 def edit(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST request required."}, status=400)
-# TODO:
+    if request.method != "PUT":
+        return JsonResponse({"message": "PUT request required."}, status=400)
 
     data = json.loads(request.body)
     post_id = data.get("id")
@@ -83,18 +75,18 @@ def edit(request):
 
     try:
         this_post = Post.objects.get(id=post_id)
-        print(this_post)
+
     except:
-        return JsonResponse({
-            "error": f"Post not found."
-        }, status=404)
-# TODO: check for correct user
+        return JsonResponse({"message": f"Post #{post_id} not found."}, status=404)
     
-    return JsonResponse({"message": "test."}, status=201)  
+    if request.user.id != this_post.user_id:
+# TODO: if wrong user: does not accept, but loads rejected content inside post
+        return JsonResponse({"message": "Forbidden"}, status=403)
+
+    this_post.content = edited_content
+    this_post.save()    
     
-    
-    
-    
+    return JsonResponse({"message": f"Post #{post_id} has been edited."}, status=202)  
     
     
 def profile(request, profile_name):
@@ -161,22 +153,7 @@ def following(request):
     return render(request, "network/index.html" , {
         "posts": page_obj
     })
-
-# edit post
-    # modelForm
-        # ? add ModelForm edit_post ?
-        # or use jinja/JS
     
-    # def edit_post
-        # load textarea with posts content inside
-        # save edited content with save button
-            # save with JS: no re-render of page
-        # check security: token, manipulation, get/post: check user_id
-
-
-
-
-
 
 def login_view(request):
     if request.method == "POST":
@@ -233,4 +210,3 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
-
