@@ -20,11 +20,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-function like_count() {
+function like_count(id) {
 
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;    
-    const post_id = document.querySelector('#edit_content').parentNode.id.slice(8)
-    const post_content = document.querySelector('#edit_content').value
+    const post_id = id.slice(5)
 
     const request = new Request(
         '/like',
@@ -34,23 +33,24 @@ function like_count() {
         method: 'PUT',
         mode: 'same-origin',
         body: JSON.stringify({
-            id: post_id,
-            content: post_content
+            id: post_id
         })
     })
     .then(function(response) {
         console.log(response);
     });
 
-    /* Replace content */
-    document.querySelector(`#content_${post_id}`).innerHTML = post_content;
+/* TODO: improve the following */
+    var interior = document.getElementById(`like_${post_id}`).innerHTML;
+    var likecount = parseInt(document.getElementById(`count_${post_id}`).innerHTML);
 
-    /* Display 'Edit'-button */
-    document.getElementById(`edit_${post_id}`).style.display="unset";
-
-    /* Prevent submission */
-    event.preventDefault();
-
+    if (interior == "like") {
+        document.getElementById(`like_${post_id}`).innerHTML = 'unlike';
+        document.getElementById(`count_${post_id}`).innerHTML = likecount + 1;        
+    } else {
+        document.getElementById(`like_${post_id}`).innerHTML = 'like';
+        document.getElementById(`count_${post_id}`).innerHTML = likecount - 1;
+    };
 
 };
 

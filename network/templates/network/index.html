@@ -74,8 +74,14 @@
                             {{ post.posted }}
                         </div>
                         <div id="likes_{{post.id}}">
-                            {{ post.likes }} likes 
-                            <button id="like_{{post.id}}" type="button" name="like">&#10084;</button>
+                            <span id="count_{{post.id}}">{{ post.likes }}</span> likes 
+                            
+                            {% if post.id in liked %}
+                                <button id="like_{{post.id}}" type="button" name="like">unlike</button>
+                            {% else %}
+                                <button id="like_{{post.id}}" type="button" name="like">like</button>
+                            {% endif %}
+
                         </div>
                     </div>
                     <br>

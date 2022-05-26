@@ -44,55 +44,58 @@ def index(request):
             return HttpResponseRedirect("/")     
             
     else:
+        
+        # create array of all posts liked by current_user         
+        try:
+            all_liked_posts = []
+            my_likes = request.user.profile.my_like.all()
+            for post in my_likes:
+                all_liked_posts.append(post.id)
+        except:
+            all_liked_posts = None
+# TODO: handle if not logged in
         all_posts = Post.objects.select_related().order_by('-posted')
         paginate_posts = Paginator(all_posts, 10, orphans=0, allow_empty_first_page=True)
         page_number = request.GET.get('page')
         page_obj = paginate_posts.get_page(page_number)
         return render(request, "network/index.html" , {
+            "liked": all_liked_posts,
             "form": PostForm(),
             "posts": page_obj
         })
-        
-# TODO:
-    # like/unlike button: JS, asynch., update like-count (no re-render)
-        
-    # def user_profile
-        # display: followers & following
-        # display user's posts (reverse chronological order: newest -> oldest)
-        # if visitor != user: follow/unfollow button
 
-    # Load others profiles
-        # profile on seperate page or on same?  
 
 def like(request):
+    
     if request.method != "PUT":
         return JsonResponse({"message": "PUT request required."}, status=400)
 
     data = json.loads(request.body)
     post_id = data.get("id")
-    edited_content = data.get("content")
-
+    users_profile = request.user.profile
+    
     try:
         this_post = Post.objects.get(id=post_id)
 
     except:
         return JsonResponse({"message": f"Post #{post_id} not found."}, status=404)
     
-    if request.user.id != this_post.user_id:
-# TODO: if wrong user: does not accept, but loads rejected content inside post
-        return JsonResponse({"message": "Forbidden"}, status=403)
+    #gets all my_likes
+    users_likes = users_profile.my_like.all()
 
-    this_post.content = edited_content
-    this_post.save()    
-    
+    if this_post not in users_likes:
+        users_profile.my_like.add(post_id)
+        this_post.likes += 1
+
+    else:
+        users_profile.my_like.remove(post_id)
+        this_post.likes -= 1
+        
+# MY_LIKES? MY_LIKE?
+    users_profile.save()
+    this_post.save()
+
     return JsonResponse({"message": f"Post #{post_id} has been edited."}, status=202)  
-
-
-
-
-
-
-
 
 
 def edit(request):
