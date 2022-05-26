@@ -1,69 +1,20 @@
 // Wait for page to loaded:
 document.addEventListener('DOMContentLoaded', function() {
 
-/* TODO: */
-    /* more specific: name=edit, forEach? */
-    const edits = document.getElementsByName("edit");
-    for (var i = 0; i < edits.length; i += 1) {
-        edits[i].onclick = function() {
-            prepare_editing(this.id);
-        };
-    };
-
-    const likes = document.getElementsByName("like");
-    for (var i = 0; i < likes.length; i += 1) {
-        likes[i].onclick = function() {
-            like_count(this.id);
+    const edit_buttons = document.getElementsByName("edit");
+    for (var i = 0; i < edit_buttons.length; i += 1) {
+        edit_buttons[i].onclick = function() {
+            prepare_edit(this.id);
         };
     };
     
 });
 
-
-function like_count(id) {
-
-    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;    
-    const post_id = id.slice(5)
-
-    const request = new Request(
-        '/like',
-        {headers: {'X-CSRFToken': csrftoken}}
-    );
-    fetch(request, {
-        method: 'PUT',
-        mode: 'same-origin',
-        body: JSON.stringify({
-            id: post_id
-        })
-    })
-    .then(function(response) {
-        console.log(response);
-    });
-
-/* TODO: improve the following */
-    var interior = document.getElementById(`like_${post_id}`).innerHTML;
-    var likecount = parseInt(document.getElementById(`count_${post_id}`).innerHTML);
-
-    if (interior == "like") {
-        document.getElementById(`like_${post_id}`).innerHTML = 'unlike';
-        document.getElementById(`count_${post_id}`).innerHTML = likecount + 1;        
-    } else {
-        document.getElementById(`like_${post_id}`).innerHTML = 'like';
-        document.getElementById(`count_${post_id}`).innerHTML = likecount - 1;
-    };
-
-};
-
-
-
-
-
-
-/* replaces content of div with POST-Form */
-function prepare_editing(id) {
+/* Replaces posts content */
+function prepare_edit(id) {
 
     const element = document.getElementById(id);
-    const content_container = element.previousElementSibling
+    const content_container = element.previousElementSibling;
     const content = element.previousElementSibling.innerHTML.trim();
 
     /* Clear content_container & hide 'edit'-button */
@@ -84,18 +35,19 @@ function prepare_editing(id) {
     content_container.append(edit_textarea, save_button);
     edit_textarea.innerHTML = content;
 
-    /*Event: save edited content */
-    document.querySelector('#save').addEventListener('click', save_edit)
+    /* Event: save edited content */
+    document.querySelector('#save').addEventListener('click', save_edit);
 
 };
 
-/* Accept and commit 'content' changes */
+/* 'Save' edited content */
 function save_edit(event) {
 
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;    
-    const post_id = document.querySelector('#edit_content').parentNode.id.slice(8)
-    const post_content = document.querySelector('#edit_content').value
+    const post_id = document.querySelector('#edit_content').parentNode.id.slice(8);
+    const post_content = document.querySelector('#edit_content').value;
 
+    /* Send request to 'edit' in views.py */
     const request = new Request(
         '/edit',
         {headers: {'X-CSRFToken': csrftoken}}
