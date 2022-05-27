@@ -1,9 +1,11 @@
 {% extends "network/layout.html" %}
+{% load static %}
 
 {% block body %}
 
+    <!-- Create new post -->  
     <div>
-        <!-- NEW POST FIELD -->    
+  
         {% if user.is_authenticated %}
 
             {% csrf_token %}  
@@ -26,10 +28,6 @@
 
     </div>
 
-
-
-
-
     {% if profile %}
 
         <!-- profile -->
@@ -43,27 +41,29 @@
             <div id="profile_followers">
                 followers: <span id="followers">{{ profile.followers }}</span>
             </div>
+
+            {% if user.is_authenticated and profile.user.username != request.user.username %}
+
+                <div>
+                    <button class="btn btn-info" type="button" id="follow_button" name="follow">Follow</button>
+                </div>
+
+            {% endif %}
+
         </div>
-
-        <!-- follow/unfollow -->   
-        {% if user.is_authenticated and profile.user.username != request.user.username %}
-
-            <button class="btn btn-info" type="button" id="follow_button">follow</button>
-
-        {% endif %}
     
     {% endif %}
-
-
 
     <!-- Posts -->   
     <div>
 
         {% if posts %}
+
             <div id="posts_frame">
+
                 <!-- LOAD ALL POSTS -->
                 {% for post in posts %}
-                    <br>
+
                     <div id="frame_{{post.id}}">
                         <div>
                             <a href={% url 'profile' post.user.username %}>{{ post.user.username}}</a>
@@ -71,9 +71,13 @@
                         <div id="content_{{post.id}}">
                             {{ post.content }}                  
                         </div>
+
                         {% if user.is_authenticated and user.id == post.user_id %}
+
                             <button id="edit_{{post.id}}" type="button" name="edit">Edit</button>
-                        {% endif %}                                                 
+
+                        {% endif %} 
+
                         <div id="timestamp_{{post.id}}">
                             {{ post.posted }}
                         </div>
@@ -100,13 +104,15 @@
 
     </div>
 
-
     <!-- Pagination -->
     <div class="pagination">
         <span class="step-links">
+
             {% if posts.has_previous %}
+
                 <a href="?page=1">&laquo; first</a>
                 <a href="?page={{ posts.previous_page_number }}">previous</a>
+
             {% endif %}
 
             <span class="current">
@@ -114,10 +120,19 @@
             </span>
 
             {% if posts.has_next %}
+
                 <a href="?page={{ posts.next_page_number }}">next</a>
                 <a href="?page={{ posts.paginator.num_pages }}">last &raquo;</a>
+
             {% endif %}
+            
         </span>
     </div>
 
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'network/edit.js' %}"></script> 
+    <script src="{% static 'network/like.js' %}"></script>     
+    <script src="{% static 'network/follow.js' %}"></script> 
 {% endblock %}

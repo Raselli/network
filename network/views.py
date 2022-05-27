@@ -1,23 +1,20 @@
-from http.client import OK
-from queue import Empty
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseBadRequest
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django import forms
-
-# TODO: check imports
 from django.http import JsonResponse
 import json
 
+
 # TODO:
 # models.py -> manytomany relationship: it is custom to use plural of my_like & following
-
- # merge profile + follow into index
- # thisway: only 1 pagination, new post on every page
+# where Profile ist queried: search by user_id. not id!!!
+# .js response -> message not displayed
+# Index: add info about user following the visited profile -> so that follow_button changes to unfollow
 
 from .models import User, Profile, Post
 
@@ -73,13 +70,13 @@ def index(request, profile_info=None):
             other_user = get_object_or_404(User, username=profile_info)
             all_posts = Post.objects.filter(user=other_user.id).select_related().order_by('-posted')
             profile_info = Profile.objects.prefetch_related().get(user=other_user.id)
-        # TODO: add information -> following or not -> follow_button.innerHTML?follow:unfollow @index.html
+    # TODO: add information -> following or not -> follow_button.innerHTML?follow:unfollow @index.html
 
         else:
             all_posts = Post.objects.select_related().order_by('-posted')            
 
         # All posts liked by current_user
-    # TODO: ? try / except necessairy ?      
+    # TODO: ? try / except necessairy ?    
         try:
             all_liked_posts = []
             my_likes = request.user.profile.my_like.all()
@@ -88,7 +85,7 @@ def index(request, profile_info=None):
         except:
             all_liked_posts = None
             
-        # TODO: handle if not logged in
+    # TODO: handle if not logged in
 
         # Pagination
         paginate_posts = Paginator(all_posts, 10, orphans=0, allow_empty_first_page=True)
@@ -112,28 +109,30 @@ def follow(request):
     data = json.loads(request.body) # get profile name
     other_profile_name = data.get("other_profile_name") # how/where???
     users_profile = request.user.profile
-    
-    try:
-        other_profile = Profile.objects.get(pk=other_profile_name.user_id)
 
+    try:
+        other_user = User.objects.get(username=other_profile_name)
+  
     except:
         return JsonResponse({"message": "Profile not found."}, status=404)
     
+    other_profile = Profile.objects.prefetch_related().get(user=other_user.id)
+
     # Check for request manipulation 1
     if other_profile.user_id == request.user.id:
         return JsonResponse({"message": "It is not possible to (un)follow yourself."}, status=400)
     
-    current_user_follows = users_profile.following.filter(from_profile_id=users_profile.id, to_profile_id=users_profile.id)
+    current_user_followings = Profile.objects.filter(following__id=other_profile.user_id)
 
     # Follow
-    if not current_user_follows:
-        users_profile.following.add(other_profile)
-        other_profile.followers += 1
+    if current_user_followings.exists():
+        users_profile.following.remove(other_profile.user_id)
+        other_profile.followers -= 1
 
     # Unfollow
     else:
-        users_profile.following.remove(other_profile)
-        other_profile.followers -= 1
+        users_profile.following.add(other_profile.user_id)
+        other_profile.followers += 1
 
     users_profile.save()
     other_profile.save()
@@ -157,7 +156,7 @@ def like(request):
     except:
         return JsonResponse({"message": f"Post #{post_id} not found."}, status=404)
     
-    # Get all my_likes from db -> network_profile_my_like(s)
+    # Get all my_likes from db network_profile_my_like(s)
     users_likes = users_profile.my_like.all()
 
     if this_post not in users_likes:

@@ -2,18 +2,16 @@
 document.addEventListener('DOMContentLoaded', function() {
 
     /* Onclick event: follow|unfollow */
-    const follow_button = document.getElementById("follow_button");
-    follow_button.addEventListener("click", follow_profile());
-
+    document.getElementById("follow_button").addEventListener("click", follow_profile);
+    
 });
 
 /* Follow|Unfollow profile */
 function follow_profile() {
 
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;    
-    const other_profile_name = document.getElementById("profile_name");
+    const other_profile_name = document.getElementById("profile_name").innerHTML.trim();
 
-/*starting here: change everything from edit to follow */
     /* Send request to 'follow' in views.py */
     const request = new Request(
         '/follow',
@@ -27,19 +25,23 @@ function follow_profile() {
         })
     })
     .then(function(response) {
+      
         console.log(response);
+
     });
 
     /* update follow_button */
     const follow_button = document.getElementById('follow_button');
     const current_followers = document.getElementById('followers');
-    const follower_count = parseInt(current_likes.innerHTML);
+    const follower_count = parseInt(current_followers.innerHTML);
 
-    if (follow_button.innerHTML === "follow") {
-        follow_button.innerHTML = "unfollow";
+    console.log(follow_button)
+
+    if (follow_button.innerHTML === "Follow") {
+        follow_button.innerHTML = "Unfollow";
         current_followers.innerHTML = follower_count + 1;   
-    } else if (follow_button.innerHTML === "unfollow") {
-        follow_button.innerHTML = "follow";
+    } else if (follow_button.innerHTML === "Unfollow") {
+        follow_button.innerHTML = "Follow";
         current_followers.innerHTML = follower_count - 1;   
     };
     
