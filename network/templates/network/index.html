@@ -2,55 +2,59 @@
 
 {% block body %}
 
+    <div>
+        <!-- NEW POST FIELD -->    
+        {% if user.is_authenticated %}
 
-    {% csrf_token %}
+            {% csrf_token %}  
+
+            <form action="{% url 'index' %}" method="post">
+                {% csrf_token %}
+                <label>{{ form.content.label }}</label>
+                <div>{{ form.content }}</div>
+                <input type="submit" value="Post">
+            </form>
+        
+        {% else %}
+
+            <div>
+                You need to log in for writing a new Post.<br>
+                Log in <a href="{% url 'login' %}">here</a>.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+
 
 
     {% if profile %}
 
-    
+        <!-- profile -->
+        <div>
+            <div id="profile_name">
+                {{ profile.user.username }}
+            </div>
+            <div id="profile_following">
+                following: {{ profile.following.count }}
+            </div>
+            <div id="profile_followers">
+                followers: <span id="followers">{{ profile.followers }}</span>
+            </div>
+        </div>
 
         <!-- follow/unfollow -->   
         {% if user.is_authenticated and profile.user.username != request.user.username %}
-            <form action="{% url 'profile' profile.user.username %}" method="post">
-                {% csrf_token %}
 
-                    <input class="btn btn-info" type="submit" name="follow" value="follow">
+            <button class="btn btn-info" type="button" id="follow_button">follow</button>
 
-                    <input class="btn btn-info" type="submit" name="unfollow" value="unfollow">
-
-            </form>
         {% endif %}
-
-        <!-- profile -->   
-        <div>
-            following: {{ profile.following.count }}
-            <br>
-            followers: {{ profile.followers }}
-        </div>
-
-    {% else %}
-
-        <div>
-            <!-- NEW POST FIELD -->    
-            {% if user.is_authenticated %}
-
-                <form action="{% url 'index' %}" method="post">
-                    {% csrf_token %}
-                    
-                    <label>{{ form.content.label }}</label>
-                    <div>{{ form.content }}</div>
-                    <input type="submit" value="Post">
-                </form>
-            
-            {% else %}
-                You need to log in for writing a new Post.<br>
-                Log in <a href="{% url 'login' %}">here</a>.
-            {% endif %}
-
-        </div>
-        
+    
     {% endif %}
+
+
 
     <!-- Posts -->   
     <div>
@@ -87,6 +91,7 @@
                     <br>
                 {% endfor %}
             </div>
+
         {% else %}
 
             No Posts
@@ -94,8 +99,6 @@
         {% endif %}
 
     </div>
-
-
 
 
     <!-- Pagination -->
@@ -116,4 +119,5 @@
             {% endif %}
         </span>
     </div>
+
 {% endblock %}

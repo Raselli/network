@@ -1,8 +1,11 @@
 // Wait for page to loaded:
 document.addEventListener('DOMContentLoaded', function() {
 
+    /* Onclick event for each edit-buttons */
+    /* For-loop loops faster than forEach */
     const edit_buttons = document.getElementsByName("edit");
-    for (var i = 0; i < edit_buttons.length; i += 1) {
+    const length = edit_buttons.length;
+    for (var i = 0; i < length; i += 1) {
         edit_buttons[i].onclick = function() {
             prepare_edit(this.id);
         };

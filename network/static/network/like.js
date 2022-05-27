@@ -1,6 +1,8 @@
 // Wait for page to loaded:
 document.addEventListener('DOMContentLoaded', function() {
-    
+
+    /* Onclick event for each edit-buttons */
+    /* ForEach loops slower than for-Loop */
     const like_buttons = document.getElementsByName("like");
     like_buttons.forEach(item => {
         item.addEventListener("click", () => {
@@ -35,15 +37,15 @@ function like_post(id) {
 
     const current_button = document.getElementById(`like_${post_id}`);
     const current_likes = document.getElementById(`count_${post_id}`);
-    const likecount = parseInt(current_likes.innerHTML);    
+    const like_count = parseInt(current_likes.innerHTML);    
 
     /* update like-button & like-counter */
     if (current_button.innerHTML === "like") {
         current_button.innerHTML = "unlike";
-        current_likes.innerHTML = likecount + 1;     
+        current_likes.innerHTML = like_count + 1;     
     } else if (current_button.innerHTML === "unlike") {
         current_button.innerHTML = "like";
-        current_likes.innerHTML = likecount - 1;    
+        current_likes.innerHTML = like_count - 1;    
     };
 
 };

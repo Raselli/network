@@ -13,6 +13,12 @@ from django import forms
 from django.http import JsonResponse
 import json
 
+# TODO:
+# models.py -> manytomany relationship: it is custom to use plural of my_like & following
+
+ # merge profile + follow into index
+ # thisway: only 1 pagination, new post on every page
+
 from .models import User, Profile, Post
 
 # Form: create post
@@ -30,22 +36,50 @@ class PostForm(forms.ModelForm):
         }
 
 
-def index(request):
-    
+# Render all-posts, profile, following inside index
+def index(request, profile_info=None):
+
+    current_user = request.user
+
     if request.method == 'POST':
+
         form = PostForm(request.POST)
         if form.is_valid:
             form = form.save(commit=False)
-            form.user_id = request.user.id
+            form.user_id = current_user.id
             form.save()
             return HttpResponseRedirect("/")
         else:
-# TODO: VALIDATION ERROR HANDLING
+            # TODO: VALIDATION ERROR HANDLING
             return HttpResponseRedirect("/")     
             
     else:
         
-        # create array of all posts liked by current_user         
+        # TODO: handle if not logged in
+        #@login_required(login_url='login')
+        if "/following" in request.path:
+            
+            # Get PK-list of all users followed by current user
+            current_users_profile = current_user.profile
+            current_user_isfollowing = current_users_profile.following.all()
+            other_users_pks = []
+            for profile in current_user_isfollowing:
+                other_users_pk = profile.user.id
+                other_users_pks.append(other_users_pk)
+            all_posts = Post.objects.select_related().filter(user_id__in=other_users_pks).order_by('-posted')
+            
+
+        elif "/profile" in request.path:
+            other_user = get_object_or_404(User, username=profile_info)
+            all_posts = Post.objects.filter(user=other_user.id).select_related().order_by('-posted')
+            profile_info = Profile.objects.prefetch_related().get(user=other_user.id)
+        # TODO: add information -> following or not -> follow_button.innerHTML?follow:unfollow @index.html
+
+        else:
+            all_posts = Post.objects.select_related().order_by('-posted')            
+
+        # All posts liked by current_user
+    # TODO: ? try / except necessairy ?      
         try:
             all_liked_posts = []
             my_likes = request.user.profile.my_like.all()
@@ -53,18 +87,61 @@ def index(request):
                 all_liked_posts.append(post.id)
         except:
             all_liked_posts = None
-# TODO: handle if not logged in
-        all_posts = Post.objects.select_related().order_by('-posted')
+            
+        # TODO: handle if not logged in
+
+        # Pagination
         paginate_posts = Paginator(all_posts, 10, orphans=0, allow_empty_first_page=True)
         page_number = request.GET.get('page')
         page_obj = paginate_posts.get_page(page_number)
+        
         return render(request, "network/index.html" , {
+            "form": PostForm(),            
+            "profile": profile_info,
             "liked": all_liked_posts,
-            "form": PostForm(),
             "posts": page_obj
         })
 
 
+# Receive request from follow.js
+def follow(request):
+
+    if request.method != "PUT":
+        return JsonResponse({"message": "PUT request required."}, status=400)
+
+    data = json.loads(request.body) # get profile name
+    other_profile_name = data.get("other_profile_name") # how/where???
+    users_profile = request.user.profile
+    
+    try:
+        other_profile = Profile.objects.get(pk=other_profile_name.user_id)
+
+    except:
+        return JsonResponse({"message": "Profile not found."}, status=404)
+    
+    # Check for request manipulation 1
+    if other_profile.user_id == request.user.id:
+        return JsonResponse({"message": "It is not possible to (un)follow yourself."}, status=400)
+    
+    current_user_follows = users_profile.following.filter(from_profile_id=users_profile.id, to_profile_id=users_profile.id)
+
+    # Follow
+    if not current_user_follows:
+        users_profile.following.add(other_profile)
+        other_profile.followers += 1
+
+    # Unfollow
+    else:
+        users_profile.following.remove(other_profile)
+        other_profile.followers -= 1
+
+    users_profile.save()
+    other_profile.save()
+
+    return JsonResponse({"message": f"Profile (un)followed."}, status=202)  
+
+
+# Receive request from like.js
 def like(request):
     
     if request.method != "PUT":
@@ -80,7 +157,7 @@ def like(request):
     except:
         return JsonResponse({"message": f"Post #{post_id} not found."}, status=404)
     
-    #gets all my_likes
+    # Get all my_likes from db -> network_profile_my_like(s)
     users_likes = users_profile.my_like.all()
 
     if this_post not in users_likes:
@@ -90,15 +167,16 @@ def like(request):
     else:
         users_profile.my_like.remove(post_id)
         this_post.likes -= 1
-        
-# MY_LIKES? MY_LIKE?
+    
     users_profile.save()
     this_post.save()
 
-    return JsonResponse({"message": f"Post #{post_id} has been edited."}, status=202)  
+    return JsonResponse({"message": f"Post #{post_id} (un)liked."}, status=202)  
 
 
+# Receive request from edit.js
 def edit(request):
+    
     if request.method != "PUT":
         return JsonResponse({"message": "PUT request required."}, status=400)
 
@@ -119,74 +197,8 @@ def edit(request):
     this_post.content = edited_content
     this_post.save()    
     
-    return JsonResponse({"message": f"Post #{post_id} has been edited."}, status=202)  
-    
-    
-def profile(request, profile_name):
+    return JsonResponse({"message": f"Post #{post_id} edited."}, status=202)
 
-    # Query profile
-    other_user = get_object_or_404(User, username=profile_name)
-    other_users_profile = Profile.objects.get(pk=other_user.id)
-
-    # method == POST:
-    if request.method == "POST":
-        current_users_profile = request.user.profile
-        
-        # Check for request manipulation 1
-        if other_user.id == request.user.id:
-            return HttpResponseBadRequest('It is not possible to follow/unfollow yourself.')
-
-        # Add other_user to Profile.followings   
-        if "follow" in request.POST:
-            current_users_profile.following.add(other_users_profile)
-            other_users_profile.followers += 1
-
-        # Remove other_user from Profile.followings  
-        elif "unfollow" in request.POST:
-            print('unfollow')
-            current_users_profile.following.remove(other_users_profile)
-            other_users_profile.followers -= 1
-        
-        # Check for request manipulation 2
-        else:
-            return HttpResponseBadRequest('Bad request.')
-
-        current_users_profile.save()
-        other_users_profile.save()
-        return HttpResponseRedirect(f"{profile_name}") 
-
-    all_posts = Post.objects.filter(user=other_user.id).select_related().order_by('-posted')
-    paginate_posts = Paginator(all_posts, 10, orphans=0, allow_empty_first_page=True)
-    page_number = request.GET.get('page')
-    page_obj = paginate_posts.get_page(page_number)
-    return render(request, "network/index.html" , {
-        "profile": Profile.objects.prefetch_related().get(user=other_user.id),
-        "posts": page_obj
-    })
-
-
-# Posts of people the User follows
-#TODO:
-    # ? merge with 'def posts' under same rendering with switchstatement/dict of different db queries ?
-@login_required(login_url='login')
-def following(request):
-    
-    # Get PK-list of all users followed by current user
-    current_users_profile = request.user.profile
-    current_user_isfollowing = current_users_profile.following.all()
-    other_users_pks = []
-    for profile in current_user_isfollowing:
-        other_users_pk = profile.user.id
-        other_users_pks.append(other_users_pk)
-    
-    all_posts = Post.objects.select_related().filter(user_id__in=other_users_pks).order_by('-posted')
-    paginate_posts = Paginator(all_posts, 10, orphans=0, allow_empty_first_page=True)
-    page_number = request.GET.get('page')
-    page_obj = paginate_posts.get_page(page_number)
-    return render(request, "network/index.html" , {
-        "posts": page_obj
-    })
-    
 
 def login_view(request):
     if request.method == "POST":
