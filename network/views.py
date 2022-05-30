@@ -195,7 +195,7 @@ def edit(request):
 
     this_post.content = edited_content
     this_post.save()    
-    
+
     return JsonResponse({"message": f"Post #{post_id} edited."}, status=202)
 
 
