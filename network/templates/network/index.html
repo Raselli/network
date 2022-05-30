@@ -4,11 +4,9 @@
 {% block body %}
 
     <!-- Create new post -->  
-    <div>
+    <div id="post_container">
   
         {% if user.is_authenticated %}
-
-            {% csrf_token %}  
 
             <form action="{% url 'index' %}" method="post">
                 {% csrf_token %}
@@ -20,8 +18,9 @@
         {% else %}
 
             <div>
-                You need to log in for writing a new Post.<br>
-                Log in <a href="{% url 'login' %}">here</a>.
+                You need to log in for writing a new Post.
+                <a href="{% url 'login' %}">Log in</a><br>
+                Don't have an account? <a href="{% url 'register' %}">Register here.</a>
             </div>
 
         {% endif %}
@@ -55,54 +54,52 @@
     {% endif %}
 
     <!-- Posts -->   
-    <div>
+    <div id="posts_frame">
 
         {% if posts %}
 
-            <div id="posts_frame">
+            <!-- LOAD ALL POSTS -->
+            {% for post in posts %}
 
-                <!-- LOAD ALL POSTS -->
-                {% for post in posts %}
-
-                    <div id="frame_{{post.id}}">
-                        <div>
-                            <a href={% url 'profile' post.user.username %}>{{ post.user.username}}</a>
-                        </div>
-                        <div id="content_{{post.id}}">
-                            {{ post.content }}                  
-                        </div>
-
-                        {% if user.is_authenticated and user.id == post.user_id %}
-
-                            <button id="edit_{{post.id}}" type="button" name="edit">Edit</button>
-
-                        {% endif %} 
-
-                        <div id="timestamp_{{post.id}}">
-                            {{ post.posted }}
-                        </div>
-                        <div id="likes_{{post.id}}">
-                            <span id="count_{{post.id}}">{{ post.likes }}</span> likes 
-                            
-                            {% if post.id in liked %}
-                                <button id="like_{{post.id}}" type="button" name="like">unlike</button>
-                            {% else %}
-                                <button id="like_{{post.id}}" type="button" name="like">like</button>
-                            {% endif %}
-
-                        </div>
+                <div id="frame_{{post.id}}">
+                    <div>
+                        <a href={% url 'profile' post.user.username %}>{{ post.user.username}}</a>
                     </div>
-                    <br>
-                {% endfor %}
-            </div>
+                    <div id="content_{{post.id}}">
+                        {{ post.content }}                  
+                    </div>
+
+                    {% if user.is_authenticated and user.id == post.user_id %}
+
+                        <button id="edit_{{post.id}}" type="button" name="edit">Edit</button>
+
+                    {% endif %} 
+
+                    <div id="timestamp_{{post.id}}">
+                        {{ post.posted }}
+                    </div>
+                    <div id="likes_{{post.id}}">
+                        <span id="count_{{post.id}}">{{ post.likes }}</span> likes 
+                        
+                        {% if post.id in liked %}
+                            <button id="like_{{post.id}}" type="button" name="like">unlike</button>
+                        {% else %}
+                            <button id="like_{{post.id}}" type="button" name="like">like</button>
+                        {% endif %}
+
+                    </div>
+                </div>
+
+            {% endfor %}
+
 
         {% else %}
 
-            No Posts
+            No posts.
 
         {% endif %}
 
-    </div>
+    </div>    
 
     <!-- Pagination -->
     <div class="pagination">

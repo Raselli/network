@@ -11,10 +11,13 @@ import json
 
 
 # TODO:
+# BUG in following -> bug in follow?    To follow does not work.
 # models.py -> manytomany relationship: it is custom to use plural of my_like & following
 # where Profile ist queried: search by user_id. not id!!!
 # .js response -> message not displayed
+# .js -> error message handling
 # Index: add info about user following the visited profile -> so that follow_button changes to unfollow
+# new post -> textarea should include "Maximum 512 characters."
 
 from .models import User, Profile, Post
 
@@ -35,63 +38,62 @@ class PostForm(forms.ModelForm):
 
 # Render all-posts, profile, following inside index
 def index(request, profile_info=None):
-
     current_user = request.user
-
+    
+    # New post
     if request.method == 'POST':
-
         form = PostForm(request.POST)
         if form.is_valid:
             form = form.save(commit=False)
             form.user_id = current_user.id
             form.save()
             return HttpResponseRedirect("/")
+        
         else:
-            # TODO: VALIDATION ERROR HANDLING
+# TODO: VALIDATION ERROR HANDLING
+            # too long -> 512 char
             return HttpResponseRedirect("/")     
             
     else:
-        
-        # TODO: handle if not logged in
-        #@login_required(login_url='login')
+# BUG in following -> bug in follow?       
+        # All posts made by users that the current user follows
         if "/following" in request.path:
             
-            # Get PK-list of all users followed by current user
-            current_users_profile = current_user.profile
-            current_user_isfollowing = current_users_profile.following.all()
+            # Check for authentication
+            if not request.user.is_authenticated:
+                return render(request, "network/login.html")
+            
+            # Get PK-list of all users followed by current user for 
+            #current_users_profile = current_user.profile
+            #current_user_isfollowing = current_users_profile.following.all()
+            current_user_isfollowing = current_user.profile.following.all()            
             other_users_pks = []
             for profile in current_user_isfollowing:
                 other_users_pk = profile.user.id
                 other_users_pks.append(other_users_pk)
             all_posts = Post.objects.select_related().filter(user_id__in=other_users_pks).order_by('-posted')
             
-
+        # Specific user’s profile page & posts
         elif "/profile" in request.path:
             other_user = get_object_or_404(User, username=profile_info)
             all_posts = Post.objects.filter(user=other_user.id).select_related().order_by('-posted')
             profile_info = Profile.objects.prefetch_related().get(user=other_user.id)
-    # TODO: add information -> following or not -> follow_button.innerHTML?follow:unfollow @index.html
 
+        # Load all posts
         else:
             all_posts = Post.objects.select_related().order_by('-posted')            
 
         # All posts liked by current_user
-    # TODO: ? try / except necessairy ?    
-        try:
-            all_liked_posts = []
+        all_liked_posts = []
+        if request.user.is_authenticated:
             my_likes = request.user.profile.my_like.all()
             for post in my_likes:
                 all_liked_posts.append(post.id)
-        except:
-            all_liked_posts = None
-            
-    # TODO: handle if not logged in
 
         # Pagination
         paginate_posts = Paginator(all_posts, 10, orphans=0, allow_empty_first_page=True)
         page_number = request.GET.get('page')
         page_obj = paginate_posts.get_page(page_number)
-        
         return render(request, "network/index.html" , {
             "form": PostForm(),            
             "profile": profile_info,
@@ -100,16 +102,18 @@ def index(request, profile_info=None):
         })
 
 
-# Receive request from follow.js
+# Follow|Unfollow profile. Request from buttonevents.js.
+@login_required
 def follow(request):
 
     if request.method != "PUT":
         return JsonResponse({"message": "PUT request required."}, status=400)
 
-    data = json.loads(request.body) # get profile name
-    other_profile_name = data.get("other_profile_name") # how/where???
+    data = json.loads(request.body)
+    other_profile_name = data.get("other_profile_name")
     users_profile = request.user.profile
 
+    # Query for Profile to follow
     try:
         other_user = User.objects.get(username=other_profile_name)
   
@@ -118,13 +122,12 @@ def follow(request):
     
     other_profile = Profile.objects.prefetch_related().get(user=other_user.id)
 
-    # Check for request manipulation 1
+    # Check for request manipulation: follow-self
     if other_profile.user_id == request.user.id:
         return JsonResponse({"message": "It is not possible to (un)follow yourself."}, status=400)
     
-    current_user_followings = Profile.objects.filter(following__id=other_profile.user_id)
-
-    # Follow
+    # Follow: Add/remove to/from Profile.followings & Profile.followers
+    current_user_followings = Profile.objects.filter(following__id=other_profile.user_id)    
     if current_user_followings.exists():
         users_profile.following.remove(other_profile.user_id)
         other_profile.followers -= 1
@@ -136,13 +139,12 @@ def follow(request):
 
     users_profile.save()
     other_profile.save()
-
     return JsonResponse({"message": f"Profile (un)followed."}, status=202)  
 
 
-# Receive request from like.js
+# Like|Unlike post. Request from buttonevents.js.
+@login_required
 def like(request):
-    
     if request.method != "PUT":
         return JsonResponse({"message": "PUT request required."}, status=400)
 
@@ -150,6 +152,7 @@ def like(request):
     post_id = data.get("id")
     users_profile = request.user.profile
     
+    # Query for post
     try:
         this_post = Post.objects.get(id=post_id)
 
@@ -158,7 +161,8 @@ def like(request):
     
     # Get all my_likes from db network_profile_my_like(s)
     users_likes = users_profile.my_like.all()
-
+    
+    # Add/remove like to/from Profile.my_likes & Post.likes
     if this_post not in users_likes:
         users_profile.my_like.add(post_id)
         this_post.likes += 1
@@ -169,33 +173,32 @@ def like(request):
     
     users_profile.save()
     this_post.save()
-
     return JsonResponse({"message": f"Post #{post_id} (un)liked."}, status=202)  
 
 
-# Receive request from edit.js
+# Edit post. Request from buttonevents.js.
+@login_required
 def edit(request):
-    
     if request.method != "PUT":
         return JsonResponse({"message": "PUT request required."}, status=400)
 
     data = json.loads(request.body)
     post_id = data.get("id")
     edited_content = data.get("content")
-
+    
+    # Query for post
     try:
         this_post = Post.objects.get(id=post_id)
 
     except:
         return JsonResponse({"message": f"Post #{post_id} not found."}, status=404)
     
+    # Check for post ownership
     if request.user.id != this_post.user_id:
-# TODO: if wrong user: does not accept, but loads rejected content inside post
         return JsonResponse({"message": "Forbidden"}, status=403)
 
     this_post.content = edited_content
-    this_post.save()    
-
+    this_post.save()
     return JsonResponse({"message": f"Post #{post_id} edited."}, status=202)
 
 
@@ -211,10 +214,12 @@ def login_view(request):
         if user is not None:
             login(request, user)
             return HttpResponseRedirect(reverse("index"))
+        
         else:
             return render(request, "network/login.html", {
                 "message": "Invalid username and/or password."
             })
+            
     else:
         return render(request, "network/login.html")
 

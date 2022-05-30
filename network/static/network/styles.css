@@ -1,0 +1,6 @@
+#post_container {
+    height: 200px;
+    border: 1px solid black;
+    margin: 50px;
+    padding: 20px;
+}
