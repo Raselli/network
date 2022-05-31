@@ -54,31 +54,33 @@
     {% endif %}
 
     <!-- Posts -->   
-    <div id="posts_frame">
+    <div id="posts_frame" class="grid-container">
 
         {% if posts %}
 
             <!-- LOAD ALL POSTS -->
             {% for post in posts %}
 
-                <div id="frame_{{post.id}}">
-                    <div>
-                        <a href={% url 'profile' post.user.username %}>{{ post.user.username}}</a>
+                <div id="frame_{{post.id}}" class="grid-item">
+                    <div class="post_username">
+                        <a href={% url 'profile' post.user.username %}>{{ post.user.username|title}}</a> posted:
                     </div>
-                    <div id="content_{{post.id}}">
-                        {{ post.content }}                  
+                    <div class="post_content_frame">
+                        <div id="content_{{post.id}}" class="post_content">
+                            {{ post.content }}                  
+                        </div>
+
+                        {% if user.is_authenticated and user.id == post.user_id %}
+
+                            <button id="edit_{{post.id}}" type="button" name="edit">Edit</button>
+
+                        {% endif %} 
+
                     </div>
-
-                    {% if user.is_authenticated and user.id == post.user_id %}
-
-                        <button id="edit_{{post.id}}" type="button" name="edit">Edit</button>
-
-                    {% endif %} 
-
-                    <div id="timestamp_{{post.id}}">
+                    <div id="timestamp_{{post.id}}" class="post_time">
                         {{ post.posted }}
                     </div>
-                    <div id="likes_{{post.id}}">
+                    <div id="likes_{{post.id}}" class="post_likes">
                         <span id="count_{{post.id}}">{{ post.likes }}</span> likes 
                         
                         {% if post.id in liked %}

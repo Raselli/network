@@ -38,12 +38,13 @@ function fetchData(route, data) {
 /* Replaces posts content */
 function prepareEdit(id) {
 
-    /* Clear content_container & hide 'edit'-button */    
-    const element = document.getElementById(id);
-    const content_container = element.previousElementSibling;
-    const content = element.previousElementSibling.innerHTML.trim();
+    /* Clear content_container & hide 'edit'-button */
+    const post_id = id.slice(5);      
+    const edit_button = document.getElementById(id);
+    const content_container = document.getElementById(`content_${post_id}`);
+    const content = content_container.innerHTML.trim();
     content_container.innerHTML = '';
-    element.style.display = "none";
+    edit_button.style.display = "none";
 
     /* Create textarea to edit */
     var edit_textarea = document.createElement('textarea');
@@ -63,15 +64,14 @@ function prepareEdit(id) {
     document.querySelector('#save').addEventListener('click', function() {
  
         /* Fetch data */
-        const post_id = document.querySelector('#edit_content').parentNode.id.slice(8);
         const post_content = document.querySelector('#edit_content').value;
         const route = '/edit';    
         const data = {content: post_content, id: post_id};
         fetchData(route, data);
 
         /* Update post */
-        document.querySelector(`#content_${post_id}`).innerHTML = post_content;
-        document.getElementById(`edit_${post_id}`).style.display = "unset";
+        content_container.innerHTML = post_content;
+        edit_button.style.display = "unset";
     })
 };
 
