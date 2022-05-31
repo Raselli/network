@@ -30,9 +30,9 @@
     {% if profile %}
 
         <!-- profile -->
-        <div>
+        <div id="profile_frame">
             <div id="profile_name">
-                {{ profile.user.username }}
+                {{ profile.user.username | title }}
             </div>
             <div id="profile_following">
                 following: {{ profile.following.count }}
@@ -62,33 +62,38 @@
             {% for post in posts %}
 
                 <div id="frame_{{post.id}}" class="grid-item">
-                    <div class="post_username">
-                        <a href={% url 'profile' post.user.username %}>{{ post.user.username|title}}</a> posted:
-                    </div>
-                    <div class="post_content_frame">
-                        <div id="content_{{post.id}}" class="post_content">
-                            {{ post.content }}                  
+                    <div class="post_header">
+                        <div class="post_username">
+                            <a href={% url 'profile' post.user.username %}>{{ post.user.username | title}}</a> posted:
                         </div>
-
-                        {% if user.is_authenticated and user.id == post.user_id %}
-
-                            <button id="edit_{{post.id}}" type="button" name="edit">Edit</button>
-
-                        {% endif %} 
-
+                        <div id="timestamp_{{post.id}}" class="post_time">
+                            Posted on {{ post.posted }}
+                        </div>                   
                     </div>
-                    <div id="timestamp_{{post.id}}" class="post_time">
-                        {{ post.posted }}
+                    <hr>
+                    <div id="content_{{post.id}}" class="post_content">
+                        {{ post.content }}                  
                     </div>
-                    <div id="likes_{{post.id}}" class="post_likes">
-                        <span id="count_{{post.id}}">{{ post.likes }}</span> likes 
-                        
-                        {% if post.id in liked %}
-                            <button id="like_{{post.id}}" type="button" name="like">unlike</button>
-                        {% else %}
-                            <button id="like_{{post.id}}" type="button" name="like">like</button>
-                        {% endif %}
+                    <div class="post_footer">
+                        <div id="likes_{{post.id}}" class="post_likes">
+                            <span id="count_{{post.id}}" class="post_like_counter">{{ post.likes }}</span>
+                            
+                            {% if post.id in liked %}                           
+                                <button id="like_{{post.id}}" type="button" name="like" class="btn btn-default">❤️</button>
+                            {% else %}
+                                <button id="like_{{post.id}}" type="button" name="like" class="btn btn-default">💙</button>
+                            {% endif %}
 
+                        </div>                        
+                        <div class="post_editbutton"> 
+
+                            {% if user.is_authenticated and user.id == post.user_id %}
+
+                                <button id="edit_{{post.id}}" type="button" name="edit" class="btn btn-success">Edit</button>
+
+                            {% endif %} 
+
+                        </div>
                     </div>
                 </div>
 

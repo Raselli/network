@@ -88,11 +88,11 @@ function likePost(id) {
     const current_button = document.getElementById(`like_${post_id}`);
     const current_likes = document.getElementById(`count_${post_id}`);
     const like_count = parseInt(current_likes.innerHTML);
-    if (current_button.innerHTML === "like") {
-        current_button.innerHTML = "unlike";
+    if (current_button.innerHTML === "💙") {
+        current_button.innerHTML = "❤️";
         current_likes.innerHTML = like_count + 1;     
-    } else if (current_button.innerHTML === "unlike") {
-        current_button.innerHTML = "like";
+    } else if (current_button.innerHTML === "❤️") {
+        current_button.innerHTML = "💙";
         current_likes.innerHTML = like_count - 1;    
     }
 };
