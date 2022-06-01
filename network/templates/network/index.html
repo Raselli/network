@@ -3,134 +3,138 @@
 
 {% block body %}
 
-    <!-- Create new post -->  
-    <div id="post_container">
-  
-        {% if user.is_authenticated %}
-
-            <form action="{% url 'index' %}" method="post">
-                {% csrf_token %}
-                <label>{{ form.content.label }}</label>
-                <div>{{ form.content }}</div>
-                <input type="submit" value="Post">
-            </form>
-        
-        {% else %}
-
-            <div>
-                You need to log in for writing a new Post.
-                <a href="{% url 'login' %}">Log in</a><br>
-                Don't have an account? <a href="{% url 'register' %}">Register here.</a>
-            </div>
-
-        {% endif %}
-
-    </div>
-
-    {% if profile %}
-
-        <!-- profile -->
-        <div id="profile_frame">
-            <div id="profile_name">
-                {{ profile.user.username | title }}
-            </div>
-            <div id="profile_following">
-                following: {{ profile.following.count }}
-            </div>
-            <div id="profile_followers">
-                followers: <span id="followers">{{ profile.followers }}</span>
-            </div>
-
-            {% if user.is_authenticated and profile.user.username != request.user.username %}
-
-                <div>
-                    <button class="btn btn-info" type="button" id="follow_button" name="follow">Follow</button>
-                </div>
-
-            {% endif %}
-
+    <div class="grid">
+        <div class="side-bar">
         </div>
-    
-    {% endif %}
+        <!-- Create new post --> 
+        <div class="grid-item">
+            <div id="post_container">
+        
+                {% if user.is_authenticated %}
 
-    <!-- Posts -->   
-    <div id="posts_frame" class="grid-container">
+                    <form action="{% url 'index' %}" method="post">
+                        {% csrf_token %}
+                        <label id="form_label">{{ form.content.label }}</label>
+                        <div>{{ form.content }}</div>
+                        <input type="submit" value="Post" class="btn btn-primary">
+                    </form>
+                
+                {% else %}
 
-        {% if posts %}
-
-            <!-- LOAD ALL POSTS -->
-            {% for post in posts %}
-
-                <div id="frame_{{post.id}}" class="grid-item">
-                    <div class="post_header">
-                        <div class="post_username">
-                            <a href={% url 'profile' post.user.username %}>{{ post.user.username | title}}</a> posted:
-                        </div>
-                        <div id="timestamp_{{post.id}}" class="post_time">
-                            Posted on {{ post.posted }}
-                        </div>                   
+                    <div>
+                        You need to log in for writing a new Post.
+                        <a href="{% url 'login' %}">Log in</a><br>
+                        Don't have an account? <a href="{% url 'register' %}">Register here.</a>
                     </div>
-                    <hr>
-                    <div id="content_{{post.id}}" class="post_content">
-                        {{ post.content }}                  
-                    </div>
-                    <div class="post_footer">
-                        <div id="likes_{{post.id}}" class="post_likes">
-                            <span id="count_{{post.id}}" class="post_like_counter">{{ post.likes }}</span>
-                            
-                            {% if post.id in liked %}                           
-                                <button id="like_{{post.id}}" type="button" name="like" class="btn btn-default">❤️</button>
-                            {% else %}
-                                <button id="like_{{post.id}}" type="button" name="like" class="btn btn-default">💙</button>
-                            {% endif %}
 
-                        </div>                        
-                        <div class="post_editbutton"> 
+                {% endif %}
 
-                            {% if user.is_authenticated and user.id == post.user_id %}
+            </div>
 
-                                <button id="edit_{{post.id}}" type="button" name="edit" class="btn btn-success">Edit</button>
+            {% if profile %}
 
-                            {% endif %} 
+                <!-- profile -->
+                <div id="profile_frame">
+                    <span id="profile_name">
+                        {{ profile.0.user.username }}
+                    </span>
+                    <span id="profile_following">
+                        following: {{ profile.0.following.count }}
+                    </span>
+                    <span id="profile_followers">
+                        followers: <span id="followers">{{ profile.0.followers }}</span>
+                    </span>
 
-                        </div>
-                    </div>
+                    {% if user.is_authenticated and profile.0.user.username != request.user.username %}
+
+                        <button class="btn btn-info" type="button" id="follow_button" name="follow">{{ profile.1 }}</button>
+
+                    {% endif %}
+
                 </div>
-
-            {% endfor %}
-
-
-        {% else %}
-
-            No posts.
-
-        {% endif %}
-
-    </div>    
-
-    <!-- Pagination -->
-    <div class="pagination">
-        <span class="step-links">
-
-            {% if posts.has_previous %}
-
-                <a href="?page=1">&laquo; first</a>
-                <a href="?page={{ posts.previous_page_number }}">previous</a>
-
-            {% endif %}
-
-            <span class="current">
-                Page {{ posts.number }} of {{ posts.paginator.num_pages }}.
-            </span>
-
-            {% if posts.has_next %}
-
-                <a href="?page={{ posts.next_page_number }}">next</a>
-                <a href="?page={{ posts.paginator.num_pages }}">last &raquo;</a>
-
-            {% endif %}
             
-        </span>
+            {% endif %}
+
+            <div id="posts_frame">
+
+                {% if posts %}
+
+                    {% for post in posts %}
+
+                        <div id="frame_{{post.id}}" class="post_body">
+                            <div class="post_header">
+                                <div class="post_username">
+                                    <a href={% url 'profile' post.user.username %}>{{ post.user.username }}</a>
+                                </div>
+                                <div id="timestamp_{{post.id}}" class="post_time">
+                                    Posted on {{ post.posted }}
+                                </div>                   
+                            </div>
+                            <hr>
+                            <div id="content_{{post.id}}" class="post_content">
+                                {{ post.content }}                  
+                            </div>
+                            <div class="post_footer">
+                                <div id="likes_{{post.id}}" class="post_likes">
+                                    <span id="count_{{post.id}}" class="post_like_counter">{{ post.likes }}</span>
+                                    
+                                    {% if post.id in liked %}                           
+                                        <button id="like_{{post.id}}" type="button" name="like" class="btn btn-default">❤️</button>
+                                    {% else %}
+                                        <button id="like_{{post.id}}" type="button" name="like" class="btn btn-default">💙</button>
+                                    {% endif %}
+
+                                </div>                        
+                                <div class="post_editbutton"> 
+
+                                    {% if user.is_authenticated and user.id == post.user_id %}
+
+                                        <button id="edit_{{post.id}}" type="button" name="edit" class="btn btn-success">Edit</button>
+
+                                    {% endif %} 
+
+                                </div>
+                            </div>
+                        </div>
+
+                    {% endfor %}
+
+
+                {% else %}
+
+                    No posts.
+
+                {% endif %}
+
+            </div>
+        </div>
+        <div class="grid-item">
+        </div>
+    </div>
+    <div class="footer">
+        <div class="pagination">
+            <span class="step-links">
+
+                {% if posts.has_previous %}
+
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ posts.previous_page_number }}">previous</a>
+
+                {% endif %}
+
+                <span class="current">
+                    Page {{ posts.number }} of {{ posts.paginator.num_pages }}.
+                </span>
+
+                {% if posts.has_next %}
+
+                    <a href="?page={{ posts.next_page_number }}">next</a>
+                    <a href="?page={{ posts.paginator.num_pages }}">last &raquo;</a>
+
+                {% endif %}
+                
+            </span>
+        </div>
     </div>
 
 {% endblock %}

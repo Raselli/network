@@ -11,13 +11,9 @@ import json
 
 
 # TODO:
-# BUG in following -> bug in follow?    To follow does not work.
 # models.py -> manytomany relationship: it is custom to use plural of my_like & following
-# where Profile ist queried: search by user_id. not id!!!
 # .js response -> message not displayed
 # .js -> error message handling
-# Index: add info about user following the visited profile -> so that follow_button changes to unfollow
-# new post -> textarea should include "Maximum 512 characters."
 
 from .models import User, Profile, Post
 
@@ -28,7 +24,11 @@ class PostForm(forms.ModelForm):
         fields = ["content"]
         
         widgets = {
-            "content": forms.Textarea(attrs={"rows":3, "cols":10})
+            "content": forms.Textarea(attrs={
+                "rows":3, 
+                "class": "new_post_textarea",
+                "placeholder": "Enter your message (Maximum of 512 characters)."
+            })
         }
         
         labels = {
@@ -51,11 +51,13 @@ def index(request, profile_info=None):
         
         else:
 # TODO: VALIDATION ERROR HANDLING
-            # too long -> 512 char
+            # if too long -> 512 char
+            # if empty
             return HttpResponseRedirect("/")     
-            
+    
+    # GET-requests for all_posts, profile, following     
     else:
-# BUG in following -> bug in follow?       
+         
         # All posts made by users that the current user follows
         if "/following" in request.path:
             
@@ -64,8 +66,6 @@ def index(request, profile_info=None):
                 return render(request, "network/login.html")
             
             # Get PK-list of all users followed by current user for 
-            #current_users_profile = current_user.profile
-            #current_user_isfollowing = current_users_profile.following.all()
             current_user_isfollowing = current_user.profile.following.all()            
             other_users_pks = []
             for profile in current_user_isfollowing:
@@ -75,9 +75,17 @@ def index(request, profile_info=None):
             
         # Specific user’s profile page & posts
         elif "/profile" in request.path:
-            other_user = get_object_or_404(User, username=profile_info)
+            other_user = get_object_or_404(User, username=profile_info)            
+            following = "Follow"          
+            
+            # All posts liked by current_user
+            if request.user.is_authenticated:
+                followings = request.user.profile.following.all()
+                for profile in followings:
+                    following = "Unfollow" if (profile.id == other_user.id) else "Follow"
+                        
             all_posts = Post.objects.filter(user=other_user.id).select_related().order_by('-posted')
-            profile_info = Profile.objects.prefetch_related().get(user=other_user.id)
+            profile_info = [Profile.objects.prefetch_related().get(user=other_user.id), following]
 
         # Load all posts
         else:
@@ -119,7 +127,6 @@ def follow(request):
   
     except:
         return JsonResponse({"message": "Profile not found."}, status=404)
-    
     other_profile = Profile.objects.prefetch_related().get(user=other_user.id)
 
     # Check for request manipulation: follow-self
@@ -132,7 +139,6 @@ def follow(request):
         users_profile.following.remove(other_profile.user_id)
         other_profile.followers -= 1
 
-    # Unfollow
     else:
         users_profile.following.add(other_profile.user_id)
         other_profile.followers += 1

@@ -1,32 +1,63 @@
+body {
+    background-color: lightslategray;
+}
+
 textarea {
     resize: none;
+    background-color: ghostwhite;
+}
+
+/* grid */
+.grid {
+    display: grid;
+    grid-template-columns: auto 800px auto;
+}
+
+/* New post */
+#form_label {
+    font-weight: bold;
 }
 
 #post_container {
     height: 200px;
-    border: 1px solid black;
-    margin: 50px;
-    padding: 20px;
-    box-shadow: 1px 1px;
 }
 
-.grid-container {
-    display: grid;
-    grid-template-columns: auto auto;
-    border-bottom: 1px solid black;
-    background-color: lightskyblue;
+.new_post_textarea {
+    width: 100%;
 }
 
-.grid-item {
-    width: 542px;
-    height: 322px;
-    margin: 50px;
-    background-color: ivory;
-    padding: 20px;
+.btn-primary, .btn-info {
+    float: right;
+}
+
+#profile_name, #profile_following, #profile_followers {
+    margin-right: 20px;
+}
+
+#profile_name {
+    font-size: x-large;
+    font-weight: bolder;
+}
+
+/*
+
+*/
+
+.post_body {
+    height: 260px;
+    margin-bottom: 50px;
     font-size: 14px;
-    border-radius: 5px;
-    box-shadow: 2px 2px 1px;
 }
+
+.post_body, #profile_frame, #post_container {
+    box-shadow: 2px 2px 1px;
+    border: 1px solid rgba(0, 0, 0, 0.05);  
+    margin: 50px;
+    border-radius: 5px;
+    padding: 20px;
+    background-color: linen;  
+    width: 720px;       
+}  
 
 .post_header, .post_footer {
     display: grid;
@@ -44,13 +75,14 @@ textarea {
 
 .post_time {
     font-style: italic;
+    padding-top: 3px;
 }
 
 .post_content {
     background-color: ghostwhite;
     word-break: break-word;
-    width: 500px;
-    height: 174px;
+    width: 100%;
+    height: 110px;
     margin: 5px 0px 15px 0px;
     padding: 5px;
     border-radius: 5px;
@@ -77,19 +109,14 @@ textarea {
     height: 100%;
 }
 
+.footer {
+    background-color: aliceblue;
+    bottom: 0;
+}
+
 .pagination {
     margin-left: 48%;
     font-weight: bold;
-}
-
-#profile_frame {
-    border: 1px solid black;
-    padding: 20px;
-}
-
-#profile_name {
-    font-size: x-large;
-    font-weight: bolder;
 }
 
 
