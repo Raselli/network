@@ -25,7 +25,7 @@ class PostForm(forms.ModelForm):
         
         widgets = {
             "content": forms.Textarea(attrs={
-                "rows":3, 
+                "rows": 5, 
                 "class": "new_post_textarea",
                 "placeholder": "Enter your message (Maximum of 512 characters)."
             })

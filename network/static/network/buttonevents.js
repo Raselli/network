@@ -52,12 +52,13 @@ function prepareEdit(id) {
 
     /* Create save button */
     var save_button = document.createElement('button');
-    save_button.className = 'btn btn-sm btn-outline-primary';
+    save_button.className = 'btn btn-primary';
     save_button.setAttribute('id', 'save');
     save_button.innerHTML = 'Save';
 
     /* Add new elements to DOM and populate textarea */
-    content_container.append(edit_textarea, save_button);
+    content_container.append(edit_textarea);
+    edit_button.parentNode.append(save_button);
     edit_textarea.innerHTML = content;
 
     /* Event: save edited content */
@@ -72,6 +73,7 @@ function prepareEdit(id) {
         /* Update post */
         content_container.innerHTML = post_content;
         edit_button.style.display = "unset";
+        edit_button.parentNode.removeChild(save_button)
     })
 };
 

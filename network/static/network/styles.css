@@ -1,10 +1,17 @@
 body {
-    background-color: lightslategray;
+    background-color: slategray;
 }
 
 textarea {
     resize: none;
     background-color: ghostwhite;
+    border: none;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+textarea, .post_content {
+    box-shadow: inset 0px 1px 5px;
 }
 
 /* grid */
@@ -19,7 +26,7 @@ textarea {
 }
 
 #post_container {
-    height: 200px;
+    height: 240px;
 }
 
 .new_post_textarea {
@@ -39,24 +46,19 @@ textarea {
     font-weight: bolder;
 }
 
-/*
-
-*/
-
 .post_body {
     height: 260px;
     margin-bottom: 50px;
     font-size: 14px;
 }
 
-.post_body, #profile_frame, #post_container {
-    box-shadow: 2px 2px 1px;
-    border: 1px solid rgba(0, 0, 0, 0.05);  
+.post_body, #profile_frame, #post_container, .no_post {
     margin: 50px;
     border-radius: 5px;
     padding: 20px;
     background-color: linen;  
-    width: 720px;       
+    width: 720px;  
+    box-shadow: inset 0px 1px 10px;    
 }  
 
 .post_header, .post_footer {
@@ -105,13 +107,22 @@ textarea {
 }
 
 #edit_content {
+    box-shadow: none;
     width: 100%;
     height: 100%;
 }
 
-.footer {
+.no_post {
+    font-weight: bold;
+}
+
+/* footer */
+footer {
     background-color: aliceblue;
+    width: 100%;
     bottom: 0;
+    position: fixed;
+    box-shadow: inset 0px 1px 10px;
 }
 
 .pagination {

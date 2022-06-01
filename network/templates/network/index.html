@@ -6,7 +6,6 @@
     <div class="grid">
         <div class="side-bar">
         </div>
-        <!-- Create new post --> 
         <div class="grid-item">
             <div id="post_container">
         
@@ -33,7 +32,6 @@
 
             {% if profile %}
 
-                <!-- profile -->
                 <div id="profile_frame">
                     <span id="profile_name">
                         {{ profile.0.user.username }}
@@ -102,7 +100,9 @@
 
                 {% else %}
 
-                    No posts.
+                    <div class="no_post">
+                        No posts.
+                    </div>
 
                 {% endif %}
 
@@ -111,30 +111,33 @@
         <div class="grid-item">
         </div>
     </div>
-    <div class="footer">
-        <div class="pagination">
-            <span class="step-links">
 
-                {% if posts.has_previous %}
+{% endblock %}
 
-                    <a href="?page=1">&laquo; first</a>
-                    <a href="?page={{ posts.previous_page_number }}">previous</a>
+{% block footer %}
 
-                {% endif %}
+    <div class="pagination">
+        <span class="step-links">
 
-                <span class="current">
-                    Page {{ posts.number }} of {{ posts.paginator.num_pages }}.
-                </span>
+            {% if posts.has_previous %}
 
-                {% if posts.has_next %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ posts.previous_page_number }}">previous</a>
 
-                    <a href="?page={{ posts.next_page_number }}">next</a>
-                    <a href="?page={{ posts.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
 
-                {% endif %}
-                
+            <span class="current">
+                Page {{ posts.number }} of {{ posts.paginator.num_pages }}.
             </span>
-        </div>
+
+            {% if posts.has_next %}
+
+                <a href="?page={{ posts.next_page_number }}">next</a>
+                <a href="?page={{ posts.paginator.num_pages }}">last &raquo;</a>
+
+            {% endif %}
+            
+        </span>
     </div>
 
 {% endblock %}
