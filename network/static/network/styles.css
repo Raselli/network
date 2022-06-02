@@ -1,5 +1,5 @@
 body {
-    background-color: slategray;
+    background-image: linear-gradient(skyblue, black);
 }
 
 textarea {
@@ -12,6 +12,14 @@ textarea {
 
 textarea, .post_content {
     box-shadow: inset 0px 1px 5px;
+}
+
+footer {
+    background-color: aliceblue;
+    width: 100%;
+    bottom: 0;
+    position: fixed;
+    box-shadow: inset 0px 1px 10px;
 }
 
 /* grid */
@@ -58,7 +66,7 @@ textarea, .post_content {
     padding: 20px;
     background-color: linen;  
     width: 720px;  
-    box-shadow: inset 0px 1px 10px;    
+    box-shadow: inset 0px 2px 10px;    
 }  
 
 .post_header, .post_footer {
@@ -114,15 +122,6 @@ textarea, .post_content {
 
 .no_post {
     font-weight: bold;
-}
-
-/* footer */
-footer {
-    background-color: aliceblue;
-    width: 100%;
-    bottom: 0;
-    position: fixed;
-    box-shadow: inset 0px 1px 10px;
 }
 
 .pagination {

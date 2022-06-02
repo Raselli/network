@@ -12,8 +12,8 @@ import json
 
 # TODO:
 # models.py -> manytomany relationship: it is custom to use plural of my_like & following
-# .js response -> message not displayed
-# .js -> error message handling
+# index -> form validation -> if invalid: error messages
+ #unit testing -> form validation
 
 from .models import User, Profile, Post
 
