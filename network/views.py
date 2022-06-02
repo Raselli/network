@@ -12,8 +12,9 @@ import json
 
 # TODO:
 # models.py -> manytomany relationship: it is custom to use plural of my_like & following
+# javascript: asynch. improve edit-response.
 # index -> form validation -> if invalid: error messages
- #unit testing -> form validation
+    #unit testing -> form validation
 
 from .models import User, Profile, Post
 
@@ -27,7 +28,7 @@ class PostForm(forms.ModelForm):
             "content": forms.Textarea(attrs={
                 "rows": 5, 
                 "class": "new_post_textarea",
-                "placeholder": "Enter your message (Maximum of 512 characters)."
+                "placeholder": "Enter your message (Maximum of 440 characters)."
             })
         }
         
@@ -53,7 +54,7 @@ def index(request, profile_info=None):
 # TODO: VALIDATION ERROR HANDLING
             # if too long -> 512 char
             # if empty
-            return HttpResponseRedirect("/")     
+                return JsonResponse({"message": "no"}, status=202)    
     
     # GET-requests for all_posts, profile, following     
     else:
@@ -145,7 +146,7 @@ def follow(request):
 
     users_profile.save()
     other_profile.save()
-    return JsonResponse({"message": f"Profile (un)followed."}, status=202)  
+    return JsonResponse({"message": "Profile (un)followed."}, status=202)  
 
 
 # Like|Unlike post. Request from buttonevents.js.
@@ -191,6 +192,10 @@ def edit(request):
     data = json.loads(request.body)
     post_id = data.get("id")
     edited_content = data.get("content")
+    
+    print(edited_content)
+    if len(edited_content) > 440:
+        return JsonResponse({"message": f"Too long: Maximum length of 440 characters."}, status=400)
     
     # Query for post
     try:

@@ -29,10 +29,27 @@ function fetchData(route, data) {
         method: 'PUT',
         mode: 'same-origin',
         body: JSON.stringify(data)
+    })/*
+    .then((response) => response.json()) 
+    .then((responseData) => {
+        console.log(responseData);
+        return responseData;
+    });*/
+    .then((response) => {
+/*TODO: improve code below */
+        status_code = response.status;
+        if((status_code == 202) & (route == '/edit')) {
+            const content_container = document.getElementById(`content_${data.id}`);
+            const edit_button = document.getElementById(`edit_${data.id}`);
+            content_container.innerHTML = data.content;
+            edit_button.style.display = "unset";
+            save_button = document.getElementById('save');
+            edit_button.parentNode.removeChild(save_button)    
+        } else if (status_code == 400) {
+            alert("Too long: Maximum length of 440 characters.")
+        }
     })
-    .then(function(response) {
-        console.log(response);
-    });
+
 };
 
 // Replaces posts content 
@@ -68,12 +85,16 @@ function prepareEdit(id) {
         const post_content = document.querySelector('#edit_content').value;
         const route = '/edit';    
         const data = {content: post_content, id: post_id};
-        fetchData(route, data);
+        fetchData(route, data)
 
-        // Update post 
-        content_container.innerHTML = post_content;
-        edit_button.style.display = "unset";
-        edit_button.parentNode.removeChild(save_button)
+        /*
+        .then(result => {
+            console.log(result)
+            content_container.innerHTML = post_content;
+            edit_button.style.display = "unset";
+            edit_button.parentNode.removeChild(save_button)    
+        })*/
+
     })
 };
 
