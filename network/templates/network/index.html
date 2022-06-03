@@ -15,8 +15,7 @@
 
                     <form action="{% url 'index' %}" method="post">
                         {% csrf_token %}
-                        <label id="form_label">{{ form.content.label }}</label>
-                        <div>{{ form.content }}</div>
+                        {{ form }}
                         <input type="submit" value="Post" class="btn btn-primary">
                     </form>
                 

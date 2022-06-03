@@ -40,75 +40,80 @@ class PostForm(forms.ModelForm):
 # Render all-posts, profile, following inside index
 def index(request, profile_info=None):
     current_user = request.user
+    new_form = PostForm()   
     
     # New post
     if request.method == 'POST':
         form = PostForm(request.POST)
+
+
+                # Save the record
+
         if form.is_valid:
-            form = form.save(commit=False)
-            form.user_id = current_user.id
-            form.save()
-            return HttpResponseRedirect("/")
-        
-        else:
+            content = form.cleaned_data["content"]
+                
+            post = Post(
+                user_id = current_user.id,
+                content = content
+            )
+            post.save()
+          
+
 # TODO: VALIDATION ERROR HANDLING
             # if too long -> 512 char
             # if empty
-                return JsonResponse({"message": "no"}, status=202)    
-    
-    # GET-requests for all_posts, profile, following     
-    else:
-         
-        # All posts made by users that the current user follows
-        if "/following" in request.path:
-            
-            # Check for authentication
-            if not request.user.is_authenticated:
-                return render(request, "network/login.html")
-            
-            # Get PK-list of all users followed by current user for 
-            current_user_isfollowing = current_user.profile.following.all()            
-            other_users_pks = []
-            for profile in current_user_isfollowing:
-                other_users_pk = profile.user.id
-                other_users_pks.append(other_users_pk)
-            all_posts = Post.objects.select_related().filter(user_id__in=other_users_pks).order_by('-posted')
-            
-        # Specific user’s profile page & posts
-        elif "/profile" in request.path:
-            other_user = get_object_or_404(User, username=profile_info)            
-            following = "Follow"          
-            
-            # All posts liked by current_user
-            if request.user.is_authenticated:
-                followings = request.user.profile.following.all()
-                for profile in followings:
-                    following = "Unfollow" if (profile.id == other_user.id) else "Follow"
-                        
-            all_posts = Post.objects.filter(user=other_user.id).select_related().order_by('-posted')
-            profile_info = [Profile.objects.prefetch_related().get(user=other_user.id), following]
+            # if too short
 
-        # Load all posts
-        else:
-            all_posts = Post.objects.select_related().order_by('-posted')            
-
+    # All posts made by users that the current user follows
+    if "/following" in request.path:
+        
+        # Check for authentication
+        if not request.user.is_authenticated:
+            return render(request, "network/login.html")
+        
+        # Get PK-list of all users followed by current user for 
+        current_user_isfollowing = current_user.profile.following.all()            
+        other_users_pks = []
+        for profile in current_user_isfollowing:
+            other_users_pk = profile.user.id
+            other_users_pks.append(other_users_pk)
+        all_posts = Post.objects.select_related().filter(user_id__in=other_users_pks).order_by('-posted')
+        
+    # Specific user’s profile page & posts
+    elif "/profile" in request.path:
+        other_user = get_object_or_404(User, username=profile_info)            
+        following = "Follow"          
+        
         # All posts liked by current_user
-        all_liked_posts = []
         if request.user.is_authenticated:
-            my_likes = request.user.profile.my_like.all()
-            for post in my_likes:
-                all_liked_posts.append(post.id)
+            followings = request.user.profile.following.all()
+            for profile in followings:
+                following = "Unfollow" if (profile.id == other_user.id) else "Follow"
+                    
+        all_posts = Post.objects.filter(user=other_user.id).select_related().order_by('-posted')
+        profile_info = [Profile.objects.prefetch_related().get(user=other_user.id), following]
 
-        # Pagination
-        paginate_posts = Paginator(all_posts, 10, orphans=0, allow_empty_first_page=True)
-        page_number = request.GET.get('page')
-        page_obj = paginate_posts.get_page(page_number)
-        return render(request, "network/index.html" , {
-            "form": PostForm(),            
-            "profile": profile_info,
-            "liked": all_liked_posts,
-            "posts": page_obj
-        })
+    # Load all posts
+    else:
+        all_posts = Post.objects.select_related().order_by('-posted')            
+
+    # All posts liked by current_user
+    all_liked_posts = []
+    if request.user.is_authenticated:
+        my_likes = request.user.profile.my_like.all()
+        for post in my_likes:
+            all_liked_posts.append(post.id)
+
+    # Pagination
+    paginate_posts = Paginator(all_posts, 10, orphans=0, allow_empty_first_page=True)
+    page_number = request.GET.get('page')
+    page_obj = paginate_posts.get_page(page_number)
+    return render(request, "network/index.html" , {
+        "form": new_form,            
+        "profile": profile_info,
+        "liked": all_liked_posts,
+        "posts": page_obj
+    })
 
 
 # Follow|Unfollow profile. Request from buttonevents.js.
@@ -193,10 +198,16 @@ def edit(request):
     post_id = data.get("id")
     edited_content = data.get("content")
     
-    print(edited_content)
+
     if len(edited_content) > 440:
-        return JsonResponse({"message": f"Too long: Maximum length of 440 characters."}, status=400)
+        return JsonResponse({"message": f"Content too long: Maximum length of 440 characters."}, status=400)
     
+    if len(edited_content) < 1:
+        return JsonResponse({"message": f"Content too short: Minimum length of 1 character."}, status=400)
+    
+    if edited_content.isspace() == True:
+        return JsonResponse({"message": f"Content only whitespace: Minimum of 1 non-whitespace character."}, status=400)
+   
     # Query for post
     try:
         this_post = Post.objects.get(id=post_id)
