@@ -46,7 +46,7 @@ function fetchData(route, data) {
             save_button = document.getElementById('save');
             edit_button.parentNode.removeChild(save_button)    
         } else if (status_code == 400) {
-            alert("Too long: Maximum length of 440 characters.")
+            alert(response)
         }
     })
 

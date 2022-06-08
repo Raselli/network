@@ -34,7 +34,8 @@ footer {
 }
 
 #post_container {
-    height: 240px;
+    min-height: 240px;
+    display: inline-block;
 }
 
 .new_post_textarea {
