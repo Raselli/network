@@ -40,7 +40,7 @@ class PostForm(forms.ModelForm):
         
         # Check for whitespace-only or empty content
         if content == None or content.isspace() == True:
-            msg = 'Content can\'be empty.'
+            msg = 'Content can\'t be empty.'
             self.add_error('content', msg)
         
         # Check if content too long
@@ -126,7 +126,7 @@ def follow(request):
 
     # Method = PUT only
     if request.method != "PUT":
-        return JsonResponse({"message": "PUT request required."}, status=400)
+        return JsonResponse({"error": "PUT request required."}, status=400)
 
     # Fetch data
     data = json.loads(request.body)
@@ -137,12 +137,12 @@ def follow(request):
     try:
         other_user = User.objects.get(username=other_profile_name)
     except:
-        return JsonResponse({"message": "Profile not found."}, status=404)
+        return JsonResponse({"error": "Profile not found."}, status=404)
     other_profile = Profile.objects.prefetch_related().get(user=other_user.id)
 
     # Check for request manipulation: follow-self
     if other_profile.user_id == request.user.id:
-        return JsonResponse({"message": "It is not possible to (un)follow yourself."}, status=400)
+        return JsonResponse({"error": "It is not possible to (un)follow yourself."}, status=400)
     
     # Follow: Add/remove to/from Profile.followings & Profile.followers
     current_user_followings = Profile.objects.filter(following__id=other_profile.user_id)    
@@ -165,7 +165,7 @@ def like(request):
     
     # Method = PUT only
     if request.method != "PUT":
-        return JsonResponse({"message": "PUT request required."}, status=400)
+        return JsonResponse({"error": "PUT request required."}, status=400)
 
     # Fetch data
     data = json.loads(request.body)
@@ -176,7 +176,7 @@ def like(request):
     try:
         this_post = Post.objects.get(id=post_id)
     except:
-        return JsonResponse({"message": f"Post #{post_id} not found."}, status=404)
+        return JsonResponse({"error": f"Post #{post_id} not found."}, status=404)
     
     # Get all my_likes from db network_profile_my_like(s)
     users_likes = users_profile.my_like.all()
@@ -201,7 +201,7 @@ def edit(request):
     
     # Method = PUT only
     if request.method != "PUT":
-        return JsonResponse({"message": "PUT request required."}, status=400)
+        return JsonResponse({"error": "PUT request required."}, status=400)
 
     # Fetch data
     data = json.loads(request.body)
@@ -210,23 +210,23 @@ def edit(request):
 
     # Check for valid data
     if edited_content == '':
-        return JsonResponse({"message": f"Content can\'t be empty."}, status=400)
+        return JsonResponse({"error": f"Content can\'t be empty."}, status=400)
     if edited_content.isspace() == True:
-        return JsonResponse({"message": f"Only whitespace not allowed."}, status=400)
+        return JsonResponse({"error": f"Only whitespace not allowed."}, status=400)
     if len(edited_content) < 1:
-        return JsonResponse({"message": f"Content too short: Minimum length of 1 character."}, status=400)
+        return JsonResponse({"error": f"Content too short: Minimum length of 1 character."}, status=400)
     if len(edited_content) > 440:
-        return JsonResponse({"message": f"Content too long: Maximum length of 440 characters."}, status=400)
+        return JsonResponse({"error": f"Content too long: Maximum length of 440 characters."}, status=400)
   
     # Query for post
     try:
         this_post = Post.objects.get(id=post_id)
     except:
-        return JsonResponse({"message": f"Post #{post_id} not found."}, status=404)
+        return JsonResponse({"error": f"Post #{post_id} not found."}, status=404)
     
     # Check for post ownership
     if request.user.id != this_post.user_id:
-        return JsonResponse({"message": "Forbidden"}, status=403)
+        return JsonResponse({"error": "Forbidden"}, status=403)
 
     # Commit changes
     this_post.content = edited_content

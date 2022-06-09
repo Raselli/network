@@ -35,8 +35,11 @@ function fetchData(route, data) {
         console.log(responseData);
         return responseData;
     });*/
-    .then((response) => {
-/*TODO: improve code below */
+
+
+
+/*    .then((response) => {
+TODO: improve code below
         status_code = response.status;
         if((status_code == 202) & (route == '/edit')) {
             const content_container = document.getElementById(`content_${data.id}`);
@@ -47,9 +50,15 @@ function fetchData(route, data) {
             edit_button.parentNode.removeChild(save_button)    
         } else if (status_code == 400) {
             alert(response)
-        }
+        }    
+    }) */
+    .then(response => response.json())
+    .then(data => {
+      console.log('Success:', data);
     })
-
+    .catch((error) => {
+      console.error('Error:', error);
+    });
 };
 
 // Replaces posts content 
@@ -78,23 +87,48 @@ function prepareEdit(id) {
     edit_button.parentNode.append(save_button);
     edit_textarea.innerHTML = content;
 
+
+
     // Event: save edited content 
     document.querySelector('#save').addEventListener('click', function() {
  
         // Fetch data 
-        const post_content = document.querySelector('#edit_content').value;
-        const route = '/edit';    
-        const data = {content: post_content, id: post_id};
-        fetchData(route, data)
-
-        /*
+        const post_content = document.querySelector('#edit_content').value; 
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const request = new Request(
+            '/edit',
+            {headers: {'X-CSRFToken': csrftoken}}
+        );
+        fetch(request, {
+            method: 'PUT',
+            mode: 'same-origin',
+            body: JSON.stringify({
+                content: post_content, 
+                id: post_id
+            })
+        })
+        .then(response => response.json())
         .then(result => {
             console.log(result)
-            content_container.innerHTML = post_content;
-            edit_button.style.display = "unset";
-            edit_button.parentNode.removeChild(save_button)    
-        })*/
-
+            /*
+            if (response.status_code == 202) {
+                console.log('1')
+                content_container.innerHTML = post_content;
+                edit_button.style.display = "unset";
+                edit_button.parentNode.removeChild(save_button);
+            } else if (response.status_code == 400) {
+                console.log('lol')
+                console.error('Error:', error);
+                var edit_error = document.createElement('div');
+                edit_error.setAttribute('id', 'error_message');
+                content_container.append(edit_error);
+                edit_error.innerHTML('lol')
+            }
+            */
+        })            
+        .catch((error) => {
+            console.error('Error:', error);
+        })
     })
 };
 
