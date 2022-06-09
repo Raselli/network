@@ -56,7 +56,7 @@ footer {
 }
 
 .post_body {
-    height: 260px;
+    min-height: 260px;
     margin-bottom: 50px;
     font-size: 14px;
 }

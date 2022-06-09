@@ -29,32 +29,10 @@ function fetchData(route, data) {
         method: 'PUT',
         mode: 'same-origin',
         body: JSON.stringify(data)
-    })/*
-    .then((response) => response.json()) 
-    .then((responseData) => {
-        console.log(responseData);
-        return responseData;
-    });*/
-
-
-
-/*    .then((response) => {
-TODO: improve code below
-        status_code = response.status;
-        if((status_code == 202) & (route == '/edit')) {
-            const content_container = document.getElementById(`content_${data.id}`);
-            const edit_button = document.getElementById(`edit_${data.id}`);
-            content_container.innerHTML = data.content;
-            edit_button.style.display = "unset";
-            save_button = document.getElementById('save');
-            edit_button.parentNode.removeChild(save_button)    
-        } else if (status_code == 400) {
-            alert(response)
-        }    
-    }) */
+    })
     .then(response => response.json())
     .then(data => {
-      console.log('Success:', data);
+      console.log('Success:', data.message);
     })
     .catch((error) => {
       console.error('Error:', error);
@@ -87,8 +65,6 @@ function prepareEdit(id) {
     edit_button.parentNode.append(save_button);
     edit_textarea.innerHTML = content;
 
-
-
     // Event: save edited content 
     document.querySelector('#save').addEventListener('click', function() {
  
@@ -107,28 +83,24 @@ function prepareEdit(id) {
                 id: post_id
             })
         })
-        .then(response => response.json())
+        .then(response =>  response.json().then(
+                data => ({status: response.status, data: data})
+            )
+        )
         .then(result => {
-            console.log(result)
-            /*
-            if (response.status_code == 202) {
-                console.log('1')
+            if (result.status === 202) {
+                console.log("Success:",result.data.message, result.status);
                 content_container.innerHTML = post_content;
                 edit_button.style.display = "unset";
                 edit_button.parentNode.removeChild(save_button);
-            } else if (response.status_code == 400) {
-                console.log('lol')
-                console.error('Error:', error);
+            } else if (Math.floor((result.status / 100) % 10) === 4) {
+                console.log("Error:", result.data.error, result.status);
                 var edit_error = document.createElement('div');
                 edit_error.setAttribute('id', 'error_message');
-                content_container.append(edit_error);
-                edit_error.innerHTML('lol')
+                content_container.parentElement.prepend(edit_error);
+                edit_error.innerHTML = " &bull; " + result.data.error;
             }
-            */
-        })            
-        .catch((error) => {
-            console.error('Error:', error);
-        })
+        });
     })
 };
 

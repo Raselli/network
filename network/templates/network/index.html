@@ -70,28 +70,30 @@
                                 </div>                   
                             </div>
                             <hr>
-                            <div id="content_{{post.id}}" class="post_content">
-                                {{ post.content }}                  
-                            </div>
-                            <div class="post_footer">
-                                <div id="likes_{{post.id}}" class="post_likes">
-                                    <span id="count_{{post.id}}" class="post_like_counter">{{ post.likes }}</span>
-                                    
-                                    {% if post.id in liked %}                           
-                                        <button id="like_{{post.id}}" type="button" name="like" class="btn btn-default">❤️</button>
-                                    {% else %}
-                                        <button id="like_{{post.id}}" type="button" name="like" class="btn btn-default">💙</button>
-                                    {% endif %}
+                            <div>
+                                <div id="content_{{post.id}}" class="post_content">
+                                    {{ post.content }}                  
+                                </div>
+                                <div class="post_footer">
+                                    <div id="likes_{{post.id}}" class="post_likes">
+                                        <span id="count_{{post.id}}" class="post_like_counter">{{ post.likes }}</span>
+                                        
+                                        {% if post.id in liked %}                           
+                                            <button id="like_{{post.id}}" type="button" name="like" class="btn btn-default">❤️</button>
+                                        {% else %}
+                                            <button id="like_{{post.id}}" type="button" name="like" class="btn btn-default">💙</button>
+                                        {% endif %}
 
-                                </div>                        
-                                <div class="post_editbutton"> 
+                                    </div>                        
+                                    <div class="post_editbutton"> 
 
-                                    {% if user.is_authenticated and user.id == post.user_id %}
+                                        {% if user.is_authenticated and user.id == post.user_id %}
 
-                                        <button id="edit_{{post.id}}" type="button" name="edit" class="btn btn-success">Edit</button>
+                                            <button id="edit_{{post.id}}" type="button" name="edit" class="btn btn-success">Edit</button>
 
-                                    {% endif %} 
+                                        {% endif %} 
 
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -149,14 +149,16 @@ def follow(request):
     if current_user_followings.exists():
         users_profile.following.remove(other_profile.user_id)
         other_profile.followers -= 1
+        action = "unfollowed"
     else:
         users_profile.following.add(other_profile.user_id)
         other_profile.followers += 1
+        action = "followed"
 
     # Commit changes
     users_profile.save()
     other_profile.save()
-    return JsonResponse({"message": "Profile (un)followed."}, status=202)  
+    return JsonResponse({"message": f"Profile {other_profile_name} {action}."}, status=202)  
 
 
 # Like|Unlike post. Request from buttonevents.js.
@@ -185,14 +187,16 @@ def like(request):
     if this_post not in users_likes:
         users_profile.my_like.add(post_id)
         this_post.likes += 1
+        action = "liked"
     else:
         users_profile.my_like.remove(post_id)
         this_post.likes -= 1
+        action = "unliked"
     
     # Commit changes
     users_profile.save()
     this_post.save()
-    return JsonResponse({"message": f"Post #{post_id} (un)liked."}, status=202)  
+    return JsonResponse({"message": f"Post#{post_id} {action}."}, status=202)  
 
 
 # Edit post. Request from buttonevents.js.
@@ -213,8 +217,6 @@ def edit(request):
         return JsonResponse({"error": f"Content can\'t be empty."}, status=400)
     if edited_content.isspace() == True:
         return JsonResponse({"error": f"Only whitespace not allowed."}, status=400)
-    if len(edited_content) < 1:
-        return JsonResponse({"error": f"Content too short: Minimum length of 1 character."}, status=400)
     if len(edited_content) > 440:
         return JsonResponse({"error": f"Content too long: Maximum length of 440 characters."}, status=400)
   
