@@ -12,7 +12,6 @@ import json
 
 # TODO:
 # models.py -> manytomany relationship: it is custom to use plural of my_like & following
-# javascript: asynch. improve edit-response.
 
 from .models import User, Profile, Post
 
@@ -158,7 +157,7 @@ def follow(request):
     # Commit changes
     users_profile.save()
     other_profile.save()
-    return JsonResponse({"message": f"Profile {other_profile_name} {action}."}, status=202)  
+    return JsonResponse({"message": f"Profile {action}."}, status=202)  
 
 
 # Like|Unlike post. Request from buttonevents.js.
@@ -196,7 +195,7 @@ def like(request):
     # Commit changes
     users_profile.save()
     this_post.save()
-    return JsonResponse({"message": f"Post#{post_id} {action}."}, status=202)  
+    return JsonResponse({"message": f"Post {action}."}, status=202)  
 
 
 # Edit post. Request from buttonevents.js.
@@ -216,7 +215,7 @@ def edit(request):
     if edited_content == '':
         return JsonResponse({"error": f"Content can\'t be empty."}, status=400)
     if edited_content.isspace() == True:
-        return JsonResponse({"error": f"Only whitespace not allowed."}, status=400)
+        return JsonResponse({"error": f"Only-whitespace not allowed."}, status=400)
     if len(edited_content) > 440:
         return JsonResponse({"error": f"Content too long: Maximum length of 440 characters."}, status=400)
   
@@ -224,7 +223,7 @@ def edit(request):
     try:
         this_post = Post.objects.get(id=post_id)
     except:
-        return JsonResponse({"error": f"Post #{post_id} not found."}, status=404)
+        return JsonResponse({"error": f"Post not found."}, status=404)
     
     # Check for post ownership
     if request.user.id != this_post.user_id:
@@ -233,7 +232,7 @@ def edit(request):
     # Commit changes
     this_post.content = edited_content
     this_post.save()
-    return JsonResponse({"message": f"Post #{post_id} edited."}, status=202)
+    return JsonResponse({"message": f"Post edited."}, status=202)
 
 
 def login_view(request):

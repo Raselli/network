@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     for (var i = 0; i < length; i++) {
         buttons[i].onclick = function() {
             if (this.name === "edit") {
-                prepareEdit(this.id);
+                edit(this.id);
             } else if (this.name === "like") {
                 likePost(this.id);
             } else if (this.name === "follow") {
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Send request to views.py 
+// Send LIKE or FOLLOW request to views.py 
 function fetchData(route, data) {
 
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -37,71 +37,6 @@ function fetchData(route, data) {
     .catch((error) => {
       console.error('Error:', error);
     });
-};
-
-// Replaces posts content 
-function prepareEdit(id) {
-
-    // Clear content_container & hide 'edit'-button 
-    const post_id = id.slice(5);      
-    const edit_button = document.getElementById(id);
-    const content_container = document.getElementById(`content_${post_id}`);
-    const content = content_container.innerHTML.trim();
-    content_container.innerHTML = '';
-    edit_button.style.display = "none";
-
-    // Create textarea to edit 
-    var edit_textarea = document.createElement('textarea');
-    edit_textarea.setAttribute('id', 'edit_content');
-
-    // Create save button 
-    var save_button = document.createElement('button');
-    save_button.className = 'btn btn-primary';
-    save_button.setAttribute('id', 'save');
-    save_button.innerHTML = 'Save';
-
-    // Add new elements to DOM and populate textarea 
-    content_container.append(edit_textarea);
-    edit_button.parentNode.append(save_button);
-    edit_textarea.innerHTML = content;
-
-    // Event: save edited content 
-    document.querySelector('#save').addEventListener('click', function() {
- 
-        // Fetch data 
-        const post_content = document.querySelector('#edit_content').value; 
-        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        const request = new Request(
-            '/edit',
-            {headers: {'X-CSRFToken': csrftoken}}
-        );
-        fetch(request, {
-            method: 'PUT',
-            mode: 'same-origin',
-            body: JSON.stringify({
-                content: post_content, 
-                id: post_id
-            })
-        })
-        .then(response =>  response.json().then(
-                data => ({status: response.status, data: data})
-            )
-        )
-        .then(result => {
-            if (result.status === 202) {
-                console.log("Success:",result.data.message, result.status);
-                content_container.innerHTML = post_content;
-                edit_button.style.display = "unset";
-                edit_button.parentNode.removeChild(save_button);
-            } else if (Math.floor((result.status / 100) % 10) === 4) {
-                console.log("Error:", result.data.error, result.status);
-                var edit_error = document.createElement('div');
-                edit_error.setAttribute('id', 'error_message');
-                content_container.parentElement.prepend(edit_error);
-                edit_error.innerHTML = " &bull; " + result.data.error;
-            }
-        });
-    })
 };
 
 // Like|Unlike post 
@@ -146,4 +81,71 @@ function followProfile() {
         follow_button.innerHTML = "Follow";
         current_followers.innerHTML = follower_count - 1;   
     }
+};
+
+// Edit post 
+function edit(id) {
+
+    // Clear content_container & hide 'edit'-button 
+    const post_id = id.slice(5);      
+    const edit_button = document.getElementById(id);
+    const content_container = document.getElementById(`content_${post_id}`);
+    const content = content_container.innerHTML.trim();
+    content_container.innerHTML = '';
+    edit_button.style.display = "none";
+
+    // Create textarea to edit 
+    var edit_textarea = document.createElement('textarea');
+    edit_textarea.setAttribute('id', 'edit_content');
+
+    // Create save button 
+    var save_button = document.createElement('button');
+    save_button.className = 'btn btn-primary';
+    save_button.setAttribute('id', 'save');
+    save_button.innerHTML = 'Save';
+
+    // Add new elements to DOM and populate textarea 
+    content_container.append(edit_textarea);
+    edit_button.parentNode.append(save_button);
+    edit_textarea.innerHTML = content;
+
+    // Event: save edited content 
+    document.querySelector('#save').addEventListener('click', function() {
+ 
+        // Fetch data
+        const error_field = document.querySelector(`#error_msg_${post_id}`); 
+        const post_content = document.querySelector('#edit_content').value; 
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const request = new Request(
+            '/edit',
+            {headers: {'X-CSRFToken': csrftoken}}
+        );
+        fetch(request, {
+            method: 'PUT',
+            mode: 'same-origin',
+            body: JSON.stringify({
+                content: post_content, 
+                id: post_id
+            })
+        })
+        .then(response =>  response.json().then(
+                data => ({status: response.status, data: data})
+            )
+        )
+        .then(result => {
+            if (result.status === 202) {
+                error_field.innerHTML = '';
+                console.log("Success:", result.data.message);
+                content_container.innerHTML = post_content;
+                edit_button.style.display = "unset";
+                edit_button.parentNode.removeChild(save_button);
+            } else if (result.status === 400) {           
+                error_field.innerHTML = " &bull; " + result.data.error;                
+                console.log("Error:", result.data.error);
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });    
+    });
 };
