@@ -137,14 +137,14 @@ def follow(request):
         other_user = User.objects.get(username=other_profile_name)
     except:
         return JsonResponse({"error": "Profile not found."}, status=404)
-    other_profile = Profile.objects.prefetch_related().get(user=other_user.id)
+    other_profile = Profile.objects.prefetch_related().get(user=other_user)
 
     # Check for request manipulation: follow-self
     if other_profile.user_id == request.user.id:
         return JsonResponse({"error": "It is not possible to (un)follow yourself."}, status=400)
     
     # Follow: Add/remove to/from Profile.followings & Profile.followers
-    current_user_followings = Profile.objects.filter(following__id=other_profile.user_id)    
+    current_user_followings = Profile.objects.filter(user__id=users_profile.user_id, following__id=other_profile.user_id)
     if current_user_followings.exists():
         users_profile.following.remove(other_profile.user_id)
         other_profile.followers -= 1

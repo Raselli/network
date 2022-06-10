@@ -28,8 +28,7 @@ class Profile(models.Model):
         blank=True,
         symmetrical=False,
         related_name="my_likes"
-    )    
-# TODO: ? sym. really necessairy ?
+    )
 
     def __str__(self):
         return f"{self.user.username} follows {self.following.all().count()} person(s) and has {self.followers} follower(s)" 
