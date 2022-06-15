@@ -18,6 +18,11 @@ class WebpageTestsGet(unittest.TestCase):
         response = c.get("/")
         self.assertEqual(response.status_code, 200)
         
+    def test_nonexisting(self):
+        c = Client()
+        response = c.get("/notExisting")
+        self.assertEqual(response.status_code, 404)
+        
     def test_edit(self):
         c = Client()
         response = c.get("/edit")
@@ -38,7 +43,7 @@ class WebpageTestsGet(unittest.TestCase):
         response = c.get("/following")
         
         # check login
-        c.login(username='fred', password='secret')
+        c.login(username='red', password='123')
         self.assertEqual(response.status_code, 200)
         
         # check anonym. -> redirect login
@@ -54,17 +59,36 @@ class WebpageTestsGet(unittest.TestCase):
     def test_new_post(self):
         c = Client()
         c.login(username='red', password='123')
-        response = c.post('/', {'content': 'fred'})
-        self.assertEqual(response.status_code, 202)
+        response = c.post('/', {'content': 'red_test'})
+        self.assertEqual(response.status_code, 302)
+        
+    def test_empty_post(self):
+        c = Client()
+        c.login(username='red', password='123')
+        response = c.post('/', {'content': ''})
+        # raises message without error -> 200
+        self.assertEqual(response.status_code, 200)
+        
+    def test_whitespae_post(self):
+        c = Client()
+        c.login(username='red', password='123')
+        response = c.post('/', {'content': ' '})
+        # raises message without error -> 200
+        self.assertEqual(response.status_code, 200)
 
     def test_long_post(self):
         c = Client()
         c.login(username='red', password='123')
-        content = 2 ** 1500
+        num = 2 ** 1500
+        content = str(num)
         response = c.post('/', {'content': content})
-        self.assertFalse(PostForm.is_valid())
-
-
+        # raises message without error -> 200
+        self.assertEqual(response.status_code, 200)
+        
+    # Check:
+        # Post: user manipulation
+        # Like: Add like, remove like, like count, like as wrong user
+        # Following: Follow, unfollow, follow-self, follow as other-user, following count, follow count
     
 # Run each of the testing functions
 if __name__ == "__main__":

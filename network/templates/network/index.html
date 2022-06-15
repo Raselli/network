@@ -3,8 +3,6 @@
 
 {% block body %}
 
-    {{ message }}
-
     <div class="grid">
         <div class="side-bar">
         </div>
@@ -18,7 +16,7 @@
                         {{ form }}
                         <input type="submit" value="Post" class="btn btn-primary">
                     </form>
-                
+
                 {% else %}
 
                     <div>
@@ -32,7 +30,7 @@
             </div>
 
             {% if profile %}
-
+            
                 <div id="profile_frame">
                     <span id="profile_name">
                         {{ profile.0.user.username }}
@@ -45,13 +43,11 @@
                     </span>
 
                     {% if user.is_authenticated and profile.0.user.username != request.user.username %}
-
                         <button class="btn btn-info" type="button" id="follow_button" name="follow">{{ profile.1 }}</button>
-
                     {% endif %}
 
                 </div>
-            
+
             {% endif %}
 
             <div id="posts_frame">
@@ -89,9 +85,7 @@
                                 <div class="post_editbutton"> 
 
                                     {% if user.is_authenticated and user.id == post.user_id %}
-
                                         <button id="edit_{{post.id}}" type="button" name="edit" class="btn btn-success">Edit</button>
-
                                     {% endif %} 
 
                                 </div>
@@ -100,18 +94,13 @@
 
                     {% endfor %}
 
-
                 {% else %}
-
-                    <div class="no_post">
-                        No posts.
-                    </div>
-
+                    <div class="no_post">No posts.</div>
                 {% endif %}
 
             </div>
         </div>
-        <div class="grid-item">
+        <div class="side-bar">
         </div>
     </div>
 
@@ -123,10 +112,8 @@
         <span class="step-links">
 
             {% if posts.has_previous %}
-
                 <a href="?page=1">&laquo; first</a>
                 <a href="?page={{ posts.previous_page_number }}">previous</a>
-
             {% endif %}
 
             <span class="current">
@@ -134,10 +121,8 @@
             </span>
 
             {% if posts.has_next %}
-
                 <a href="?page={{ posts.next_page_number }}">next</a>
                 <a href="?page={{ posts.paginator.num_pages }}">last &raquo;</a>
-
             {% endif %}
             
         </span>
@@ -146,5 +131,9 @@
 {% endblock %}
 
 {% block script %}
-    <script src="{% static 'network/buttonevents.js' %}"></script>
+
+    {% if user.is_authenticated %}
+        <script src="{% static 'network/buttonevents.js' %}"></script>
+    {% endif %}
+
 {% endblock %}
