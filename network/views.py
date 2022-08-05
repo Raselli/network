@@ -9,11 +9,8 @@ from django import forms
 from django.http import JsonResponse
 import json
 
-
-# TODO:
-# models.py -> manytomany relationship: it is custom to use plural of my_like & following
-
 from .models import User, Profile, Post
+
 
 # Form: create post
 class PostForm(forms.ModelForm):
