@@ -1,4 +1,4 @@
-# CS50web Project4
+# CS50web Project4 - Network
 This project is an assignment from the course: [CS50 Web Programming with Python and Javascript](https://cs50.harvard.edu/web/2020/).
 
 ## Assignment
@@ -15,10 +15,6 @@ Django’s Pagination reduces the page’s length to only display 10 posts at a 
 
 ## Project Demo
 Click [here](https://youtu.be/clRNlMUcz9w) to watch a demonstration of this project on YouTube.
-
-## Assignment
-Design a Twitter-like social network website for making posts and following users.
-Assignment details [here](https://cs50.harvard.edu/web/2020/projects/4/network/).
 
 ## Distribution Code 
 [Distribution Code](https://cdn.cs50.net/web/2020/spring/projects/4/network.zip).
